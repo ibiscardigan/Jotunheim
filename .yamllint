@@ -1,0 +1,59 @@
+extends: default
+
+rules:
+  # Allow YAML files to start with ---
+  document-start: disable
+
+  # Set comments-indentation to false as required
+  comments-indentation: false
+
+  # Allow indentation with 2 spaces (Ansible standard)
+  indentation:
+    spaces: 2
+    indent-sequences: true
+    check-multi-line-strings: false
+
+  # Ensure braces have a maximum of 1 space inside
+  braces:
+    max-spaces-inside: 1
+
+  # Allow line length up to 180 characters (common in Ansible)
+  line-length:
+    max: 180
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+
+  # Allow empty lines at the start of files
+  empty-lines:
+    max: 1
+    max-start: 1
+    max-end: 1
+
+  # Allow comments at the end of lines
+  comments:
+    require-starting-space: false
+    min-spaces-from-content: 1
+
+  # Allow multiple documents in one file
+  document-end: disable
+
+  # Allow empty values
+  empty-values: disable
+
+  # Allow hyphens in keys
+  hyphens: disable
+
+  # Allow newlines in strings
+  new-lines:
+    type: unix
+
+  # Enforce octal values rules: no implicit or explicit octal allowed
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+
+  # Allow quoted strings
+  quoted-strings: disable
+
+  # Allow truthy values
+  truthy: disable

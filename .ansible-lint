@@ -1,0 +1,9 @@
+profile: basic
+
+skip_list:
+  - run-once[task]
+
+warn_list:
+  - var-naming[no-role-prefix]
+  - ignore-errors
+  - name[template]
