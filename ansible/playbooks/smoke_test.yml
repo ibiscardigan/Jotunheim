@@ -1,0 +1,7 @@
+---
+- name: Ping localhost
+  hosts: "{{ nodes | default(['dev']) | join(',') }}"
+  gather_facts: false
+  tasks:
+    - name: Ping localhost
+      ansible.builtin.ping:

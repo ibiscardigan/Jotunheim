@@ -1,0 +1,11 @@
+prod:
+  hosts:
+    localhost:
+
+staging:
+  hosts:
+    localhost:
+
+dev:
+  hosts:
+    localhost:
