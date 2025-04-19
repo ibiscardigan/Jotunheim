@@ -1,28 +1,35 @@
-# roles/homebrew/tasks/main.yml
 ---
 - name: Check for Homebrew binaries
   ansible.builtin.stat:
     path: "{{ item }}"
-  loop: "{{ brew_paths }}"
+  loop: "{{ homebrew_paths }}"
   register: brew_stat
 
 - name: Set fact if Homebrew is installed
   ansible.builtin.set_fact:
-    homebrew_installed: "{{ brew_stat.results | selectattr('stat.exists') | list | length > 0 }}"
+    homebrew_installed: "{{ brew_stat.results | selectattr('stat.exists', 'defined') | selectattr('stat.exists') | list | length > 0 }}"
+    homebrew_bin_path: >-
+      {{ (brew_stat.results | selectattr('stat.exists', 'defined') | selectattr('stat.exists') | map(attribute='stat.path') | list | first) | default('brew', true) }}
 
-- name: Install Homebrew on macOS
-  ansible.builtin.raw: >
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  args:
-    creates: "{{ brew_paths[0] }}"
-  when: not homebrew_installed
-
-- name: Verify Homebrew is installed
-  ansible.builtin.command:
-    cmd: brew --version
-  register: brew_version
-  changed_when: false
-
-- name: Display Homebrew version
+- name: Debug homebrew detection
   ansible.builtin.debug:
-    msg: "Homebrew {{ brew_version.stdout_lines[0] }} installed"
+    msg:
+      - "Homebrew installed: {{ homebrew_installed }}"
+      - "Homebrew path: {{ homebrew_bin_path }}"
+
+- name: Execute Homebrew = True
+  when:
+    - orchestration.homebrew | default(false)
+  block:
+    - name: Include Homebrew install tasks
+      ansible.builtin.include_tasks: install.yml
+      when: not homebrew_installed
+
+    - name: Verify Homebrew is installed
+      ansible.builtin.command: "{{ homebrew_bin_path }} --version"
+      register: brew_version
+      changed_when: false
+
+    - name: Display Homebrew version
+      ansible.builtin.debug:
+        msg: "Homebrew {{ brew_version.stdout_lines[0] }} installed"

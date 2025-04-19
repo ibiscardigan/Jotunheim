@@ -3,11 +3,6 @@
   hosts: "{{ nodes | default(['dev']) }}"
   gather_facts: yes
 
-  tasks:
-    - name: Skip non‑macOS hosts
-      ansible.builtin.meta:
-        end_host: true
-      when: ansible_facts['ansible_system'] != 'Darwin'
-
   roles:
-    - homebrew
+    - role: homebrew
+      when: ansible_system == 'Darwin'

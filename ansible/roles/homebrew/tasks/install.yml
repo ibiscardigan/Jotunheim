@@ -1,0 +1,7 @@
+---
+- name: Install Homebrew on macOS
+  ansible.builtin.raw: >
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  args:
+    creates: "{{ homebrew_paths[0] }}"
+  when: not homebrew_installed
