@@ -1,4 +1,14 @@
- repos:
+repos:
+  # --- YAML & generic ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+      - id: check-yaml
+        exclude: ^tests/fixtures/
+
   - repo: https://github.com/adrienverge/yamllint
     rev: v1.35.0
     hooks:
@@ -6,6 +16,40 @@
         args: ["--format", "parsable"]
         files: ^ansible/.*\.(yml|yaml)$
         types: [yaml]
+
+  # --- Python (aligned to your style) ---
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.2.0
+    hooks:
+      - id: flake8
+
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: bash -c '[[ $# -eq 0 ]] || pylint --recursive=y --rcfile=.pylintrc "$@"'
+        language: system
+        types: [python]
+        require_serial: true
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest with coverage
+        entry: pytest --cov=ansible_execute --cov-report=term-missing
+        language: system
+        types: [python]
+        pass_filenames: false
+        require_serial: true
+        always_run: true
+        stages: [pre-commit]
+
+  # --- Ansible-specific checks ---
   - repo: local
     hooks:
       - id: ansible-syntax-check
@@ -13,6 +57,7 @@
         entry: ansible-playbook --syntax-check
         language: system
         files: ^ansible/playbooks/.*\.(ya?ml)$
+
   - repo: local
     hooks:
       - id: ansible-lint

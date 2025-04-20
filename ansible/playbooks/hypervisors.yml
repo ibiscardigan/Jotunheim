@@ -1,0 +1,8 @@
+---
+- name: Provision the hypervisors and manages the VMs
+  hosts: "{{ nodes | default(['dev']) }}"
+  gather_facts: yes
+
+  roles:
+    - role: multipass
+      when: ansible_system == 'Darwin'

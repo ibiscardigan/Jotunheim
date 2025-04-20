@@ -1,0 +1,5 @@
+hypervisors:
+  multipass: true
+
+orchestration:
+  homebrew: true

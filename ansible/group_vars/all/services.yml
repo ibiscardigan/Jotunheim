@@ -7,6 +7,13 @@ datastores:
 games:
   minecraft: false
 
+home:
+  firefly_iii: false
+  frigate_nvr: false
+  home_assistant: false
+  homepage: false
+  mosquito_mqtt: false
+
 hypervisors:
   multipass: false
   proxmox: false
@@ -32,11 +39,7 @@ observability:
 
 orchestration:
   ansible: false
+  artifactory: false
   consul: false
   docker: false
-  firefly_iii: false
-  frigate_nvr: false
-  home_assistant: false
   homebrew: false
-  homepage: false
-  mosquito_mqtt: false

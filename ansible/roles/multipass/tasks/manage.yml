@@ -1,0 +1,12 @@
+---
+- name: Create vm_list variable dynamically
+  ansible.builtin.set_fact:
+    vm_list: "{{ inventory_hostname }}_{{ nodes | join('_') }}_vms"
+
+- name: Debug vm_list variable
+  ansible.builtin.debug:
+    msg: "Generated vm_list name: {{ vm_list }}"
+
+- name: Show all hosts in the dynamically generated vm_list group
+  ansible.builtin.debug:
+    msg: "Hosts in {{ vm_list }}: {{ groups[vm_list] | default([]) }}"

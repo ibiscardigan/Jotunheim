@@ -8,4 +8,12 @@ staging:
 
 dev:
   hosts:
-    localhost:
+    devmacmbpm3p001:
+
+devmacmbpm3p001_dev_vms:
+  hosts:
+    devubumlt0vm001:
+      memory: 1
+      storage: 8
+      image: focal
+      ansible_host: 192.168.1.174

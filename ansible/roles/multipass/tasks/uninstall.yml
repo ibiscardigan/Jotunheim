@@ -1,0 +1,6 @@
+---
+- name: Uninstall Multipass
+  community.general.homebrew:
+    name: "{{ multipass_package }}"
+    state: absent
+  become: false

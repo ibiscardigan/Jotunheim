@@ -1,0 +1,12 @@
+#cloud-config
+
+users:
+  - name: hamson
+    groups: sudo
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: false
+    ssh_authorized_keys:
+      - {{  ssh_key  }}
+    shell: /bin/bash
+    passwd: "{{ ansible_ssh_pass | password_hash('sha512') }}"
+ssh_pwauth: true
