@@ -10,3 +10,56 @@
 - name: Show all hosts in the dynamically generated vm_list group
   ansible.builtin.debug:
     msg: "Hosts in {{ vm_list }}: {{ groups[vm_list] | default([]) }}"
+
+- name: Provision VMs
+  multipass:
+    name: "{{ item }}"
+    image: "{{ hostvars[item]['image'] | default('lts') }}"
+    cores: "{{ hostvars[item]['cores'] | default(1) }}"
+    memory: "{{ hostvars[item]['memory'] | default(1) }}"
+    disk_space: "{{ hostvars[item]['storage'] | default(4) }}"
+    cloud_init: "{{ role_path }}/files/cloud-init.yml"
+  loop: "{{ groups[vm_list] }}"
+
+- name: Check multipass list
+  multipass:
+    list: true
+  register: active_list
+
+- name: Debug active_list
+  ansible.builtin.debug:
+    var: active_list.vm_list
+
+- name: Get list of hostnames from the 'multipass' group
+  ansible.builtin.set_fact:
+    multipass_inventory_hosts: "{{ groups[vm_list] | default([]) }}"
+
+- name: Debug multipass_inventory_hosts
+  ansible.builtin.debug:
+    var: multipass_inventory_hosts
+
+- name: Find VMs not in inventory
+  ansible.builtin.set_fact:
+    vms_not_in_inventory: >
+      {{ active_list.vm_list | difference(multipass_inventory_hosts) | list }}
+
+- name: Debug vms_not_in_inventory
+  ansible.builtin.debug:
+    var: vms_not_in_inventory
+
+- name: Remove old vms
+  multipass:
+    name: "{{ item }}"
+    state: 'absent'
+  loop: "{{ vms_not_in_inventory }}"
+
+- name: Purge multipass
+  multipass:
+    purge: true
+
+- name: Remove VMs from known_hosts
+  ansible.builtin.command:
+    cmd: "ssh-keygen -R {{ item }}"
+  loop: "{{ vms_not_in_inventory }}"
+  register: ssh_keygen_result
+  changed_when: ssh_keygen_result.rc == 0

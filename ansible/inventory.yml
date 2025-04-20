@@ -1,10 +1,10 @@
 prod:
   hosts:
-    localhost:
+    devmacmbpm3p001:
 
 staging:
   hosts:
-    localhost:
+    devmacmbpm3p001:
 
 dev:
   hosts:

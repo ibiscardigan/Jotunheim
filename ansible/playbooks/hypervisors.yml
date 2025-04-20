@@ -1,8 +1,76 @@
 ---
-- name: Provision the hypervisors and manages the VMs
-  hosts: "{{ nodes | default(['dev']) }}"
-  gather_facts: yes
+- name: Dynamically group all hypervisor-enabled hosts
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Group as "dynamic_hypervisors" if any hypervisor is true
+      ansible.builtin.group_by:
+        key: dynamic_hypervisors
+      when: >
+        (hostvars[inventory_hostname].hypervisors.multipass | default(false)) or
+        (hostvars[inventory_hostname].hypervisors.proxmox | default(false))
+      changed_when: false
 
-  roles:
-    - role: multipass
-      when: ansible_system == 'Darwin'
+- name: Filter dynamic hypervisors against nodes list
+  hosts: dynamic_hypervisors
+  gather_facts: false
+  vars:
+    resolved_nodes: >-
+      {{
+        nodes | default([]) | flatten
+        | map('extract', groups)
+        | select('defined')
+        | flatten
+        | union(
+            nodes | default([]) | flatten
+            | select('in', groups['all'])
+          )
+        | unique
+      }}
+  tasks:
+    - name: Add host to final_hypervisors group if it matches resolved nodes
+      ansible.builtin.group_by:
+        key: final_hypervisors
+      when: inventory_hostname in resolved_nodes
+      changed_when: false
+
+- name: Show dynamic groups and final target hosts
+  hosts: localhost
+  gather_facts: false
+  vars:
+    resolved_nodes: >-
+      {{
+        nodes | default([]) | flatten
+        | map('extract', groups)
+        | select('defined')
+        | flatten
+        | union(
+            nodes | default([]) | flatten
+            | select('in', groups['all'])
+          )
+        | unique
+      }}
+  tasks:
+    - name: Show hosts in dynamic_hypervisors
+      ansible.builtin.debug:
+        var: groups['dynamic_hypervisors']
+
+    - name: Show resolved nodes
+      ansible.builtin.debug:
+        var: resolved_nodes
+
+    - name: Show final provision targets
+      ansible.builtin.debug:
+        var: groups['final_hypervisors']
+
+- name: Provision the hypervisors and manage the VMs
+  hosts: final_hypervisors
+  gather_facts: true
+  tasks:
+    - name: Include multipass role on eligible Darwin hosts
+      ansible.builtin.include_role:
+        name: multipass
+      when: >
+        hostvars[inventory_hostname].hypervisors is defined and
+        hostvars[inventory_hostname].hypervisors.multipass | default(false) and
+        ansible_system == 'Darwin'
