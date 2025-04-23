@@ -1,0 +1,3 @@
+---
+- name: Refresh inventory
+  ansible.builtin.meta: refresh_inventory

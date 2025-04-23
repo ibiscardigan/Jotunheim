@@ -1,0 +1,8 @@
+- name: Run master playbook
+  hosts: localhost
+  gather_facts: true
+
+  tasks:
+    - name: Include host_var_prep role
+      ansible.builtin.include_role:
+        name: host_var_prep

@@ -1,0 +1,64 @@
+---
+- name: Gather all hosts from the groups listed in 'nodes'
+  ansible.builtin.set_fact:
+    target_hosts: "{{ nodes | map('extract', groups) | flatten | unique }}"
+
+- name: Debug merged host list
+  ansible.builtin.debug:
+    msg: "Target Hosts: {{ target_hosts | join(', ') }}"
+
+- name: Load base host attributes
+  ansible.builtin.set_fact:
+    base_attrs: >-
+      {{ lookup('file', playbook_dir + '/../group_vars/all/base_host_attributes.yml')
+         | from_yaml }}
+  run_once: true
+
+- name: Load services definitions
+  ansible.builtin.set_fact:
+    services_defs: >-
+      {{ lookup('file', playbook_dir + '/../group_vars/all/services.yml')
+         | from_yaml }}
+  run_once: true
+
+- name: Merge base attributes and services into each host's host_vars without overwriting existing
+  vars:
+    hostfile: "{{ host_var_prep_host_vars_path }}/{{ item }}.yml"
+    existing: >-
+      {{ lookup('file', hostfile) | default('', true) | from_yaml | default({}, true) }}
+    defaults: "{{ base_attrs | combine(services_defs, recursive=True) }}"
+    merged: "{{ defaults | combine(existing, recursive=True) }}"
+    base_merged: >-
+      {{ dict(
+           base_attrs.keys()
+           | zip(base_attrs.keys() | map('extract', merged))
+         ) }}
+    services_merged: >-
+      {{ dict(
+           services_defs.keys()
+           | zip(services_defs.keys() | map('extract', merged))
+         ) }}
+    base_yaml: >-
+      {{ base_merged
+         | to_nice_yaml(indent=0)
+         | regex_replace('^---\\n', '') }}
+    services_yaml: >-
+      {{ services_merged
+         | to_nice_yaml(indent=0)
+         | regex_replace('^---\\n', '') }}
+  ansible.builtin.copy:
+    dest: "{{ hostfile }}"
+    content: |-
+      # base_host_attributes
+      {{ base_yaml }}
+      # services
+      {{ services_yaml }}
+    mode: '0644'
+  loop: "{{ target_hosts }}"
+  loop_control:
+    loop_var: item
+  notify:
+    - Refresh inventory
+
+- name: Flush handlers
+  meta: flush_handlers

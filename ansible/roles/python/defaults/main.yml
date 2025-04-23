@@ -1,3 +1,28 @@
 ---
 python_minimum_version: "3.12"
-python_target_version: "3.13"
+python_target_version: "3.13.3"
+
+python_src_url: "https://www.python.org/ftp/python/{{ python_target_version }}/Python-{{ python_target_version }}.tgz"
+python_prefix: "/usr/local"
+
+python_x86_apt_dependencies:
+  - build-essential
+  - bzip2
+  - wget
+  - xz-utils
+  - sqlite3
+  - libssl-dev
+  - zlib1g-dev
+  - libbz2-dev
+  - libexpat1-dev
+  - libffi-dev
+  - libmpdec-dev
+  - libncurses5-dev
+  - libncursesw5-dev
+  - libreadline-dev
+  - libsqlite3-dev
+  - libgdbm-dev
+  - libgdbm-compat-dev
+  - libnss3-dev
+  - liblzma-dev
+  - tk-dev

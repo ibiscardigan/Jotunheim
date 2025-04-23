@@ -1,0 +1,2 @@
+---
+host_var_prep_host_vars_path: "{{ ansible_env.HOME }}/Jotunheim/ansible/host_vars"

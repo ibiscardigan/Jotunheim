@@ -1,6 +1,6 @@
 ---
 - name: Provision the base functionality on hosts
-  hosts: "{{ nodes | default(['dev']) }}"
+  hosts: "{{ target_hosts | default(nodes | default(['dev'])) }}"
   gather_facts: yes
 
   roles:

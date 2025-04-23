@@ -3,26 +3,6 @@
   ansible.builtin.set_fact:
     vm_list: "{{ inventory_hostname }}_{{ nodes | join('_') }}_vms"
 
-- name: Debug vm_list variable
-  ansible.builtin.debug:
-    msg: "Generated vm_list name: {{ vm_list }}"
-
-- name: Show all hosts in the dynamically generated vm_list group
-  ansible.builtin.debug:
-    msg: "Hosts in {{ vm_list }}: {{ groups[vm_list] | default([]) }}"
-
-- name: Debug remote PATH
-  ansible.builtin.debug:
-    var: ansible_env.PATH
-
-- name: Check multipass list
-  ibiscardigan.multipass.list:
-  register: active_list
-
-- name: Debug active_list
-  ansible.builtin.debug:
-    var: active_list
-
 - name: Create a Multipass VMs
   ibiscardigan.multipass.hosts:
     name: "{{ item }}"
@@ -36,6 +16,10 @@
   loop: "{{ groups[vm_list] }}"
   register: created_vms
 
+- name: Check multipass list
+  ibiscardigan.multipass.list:
+  register: active_list
+
 - name: Inject ansible_host for each desired VM
   ansible.builtin.add_host:
     name: "{{ item.key }}"
@@ -44,6 +28,7 @@
   loop_control:
     label: "{{ item.key }}"
   when: item.key in groups[ vm_list ]
+  changed_when: false
 
 - name: Debug ansible_host for each VM in {{ vm_group }}
   ansible.builtin.debug:

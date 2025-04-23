@@ -9,10 +9,17 @@ staging:
 dev:
   hosts:
     devmacmbpm3p001:
+  children:
+    devmacmbpm3p001_dev_vms:
 
 devmacmbpm3p001_dev_vms:
   hosts:
     devubumlt0vm001:
       memory: 1
+      storage: 8
+      image: focal
+    devubumlt0vm002:
+      cores: 2
+      memory: 2
       storage: 8
       image: focal

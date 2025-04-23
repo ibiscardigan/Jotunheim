@@ -1,0 +1,12 @@
+- name: Run master playbook
+  hosts: "{{ nodes | default(['dev']) }}"
+  gather_facts: false
+
+- name: Run prepare_ansible.yml
+  import_playbook: prepare_ansible.yml
+
+- name: Run hypervisors.yml
+  import_playbook: hypervisors.yml
+
+- name: Run provision.yml
+  import_playbook: provision.yml

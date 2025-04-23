@@ -1,5 +1,5 @@
 # base_host_attributes
-ansible_python_interpreter: /opt/homebrew/opt/python@3.13/bin/python3
+ansible_python_interpreter: /usr/local/bin/python3.13
 
 # services
 datastores:
@@ -16,7 +16,7 @@ home:
   homepage: false
   mosquito_mqtt: false
 hypervisors:
-  multipass: true
+  multipass: false
   proxmox: false
 management:
   docmost: false
