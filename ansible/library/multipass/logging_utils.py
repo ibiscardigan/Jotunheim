@@ -48,6 +48,7 @@ def setup_logger() -> Tuple[logging.Logger, Optional[str]]:
 
     logger = logging.getLogger("multipass")
     logger.setLevel(level)
+    logger.debug("Logger setup")
 
     formatter = JSONFormatter()
     resolved_log_path = None

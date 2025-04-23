@@ -1,0 +1,4 @@
+collections:
+  - name: ibiscardigan.multipass
+    source: https://github.com/ibiscardigan/ansible_multipass/releases/download/v0.1.31/ibiscardigan-multipass-0.1.31.tar.gz
+    type: url

@@ -1,5 +1,5 @@
+ansible_python_interpreter: /opt/homebrew/opt/python@3.13/bin/python3
 hypervisors:
   multipass: true
-
 orchestration:
   homebrew: true

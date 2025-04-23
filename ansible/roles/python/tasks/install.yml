@@ -1,0 +1,43 @@
+- name: Debug Install
+  ansible.builtin.debug:
+    msg: Installing Python
+
+- name: Import Mac Install
+  ansible.builtin.include_tasks: install_mac.yml
+  when: ansible_system == 'Darwin'
+
+- name: Debug computed ansible_python_interpreter
+  ansible.builtin.debug:
+    var: computed_python_interpreter
+
+- name: Read existing host_vars file (if present)
+  ansible.builtin.slurp:
+    src: "{{ playbook_dir }}/../host_vars/{{ inventory_hostname }}.yml"
+  register: existing_host_vars
+  ignore_errors: true
+  delegate_to: localhost
+  run_once: true
+
+- name: Decode and parse existing YAML (if any)
+  ansible.builtin.set_fact:
+    parsed_host_vars: "{{ existing_host_vars.content | b64decode | from_yaml }}"
+  when: existing_host_vars is defined and existing_host_vars.content is defined
+  delegate_to: localhost
+  run_once: true
+
+- name: Merge ansible_python_interpreter into host_vars
+  ansible.builtin.set_fact:
+    merged_host_vars: >-
+      {{
+        (parsed_host_vars | default({}))
+        | combine({'ansible_python_interpreter': computed_python_interpreter})
+      }}
+  delegate_to: localhost
+  run_once: true
+
+- name: Write merged host_vars to file
+  ansible.builtin.copy:
+    dest: "{{ playbook_dir }}/../host_vars/{{ inventory_hostname }}.yml"
+    content: "{{ merged_host_vars | to_nice_yaml(indent=2) }}"
+  delegate_to: localhost
+  run_once: true

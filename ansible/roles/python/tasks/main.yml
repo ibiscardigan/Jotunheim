@@ -1,0 +1,17 @@
+---
+- name: Show interpreter
+  ansible.builtin.debug:
+    var: ansible_python_interpreter
+
+- name: Set fact for interpreter version (from Ansible facts)
+  ansible.builtin.set_fact:
+    python_interpreter_version: >-
+      {{ ansible_facts.python.version.major }}.{{ ansible_facts.python.version.minor }}.{{ ansible_facts.python.version.micro }}
+
+- name: Debug python3 version
+  ansible.builtin.debug:
+    var: python_interpreter_version
+
+- name: Include install task if version is too low
+  ansible.builtin.include_tasks: install.yml
+  when: python_interpreter_version is version(python_minimum_version, '<')

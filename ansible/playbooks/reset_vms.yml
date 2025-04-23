@@ -73,10 +73,18 @@
     PATH: "/usr/local/bin:/opt/homebrew/bin:{{ ansible_env.PATH }}"
 
   tasks:
-    - name: Include multipass role on eligible Darwin hosts
-      ansible.builtin.include_role:
-        name: multipass
+    - name: Multipass remove hosts
       when: >
         hostvars[inventory_hostname].hypervisors is defined and
         hostvars[inventory_hostname].hypervisors.multipass | default(false) and
         ansible_system == 'Darwin'
+      block:
+        - name: Create vm_list variable dynamically
+          ansible.builtin.set_fact:
+            vm_list: "{{ inventory_hostname }}_{{ nodes | join('_') }}_vms"
+
+        - name: Delete running VMs not in desired list
+          ibiscardigan.multipass.hosts:
+            name: "{{ item }}"
+            state: absent
+          loop: "{{ groups[vm_list] }}"

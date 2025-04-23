@@ -6,3 +6,5 @@
   roles:
     - role: homebrew
       when: ansible_system == 'Darwin'
+
+    - role: python

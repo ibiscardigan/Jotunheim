@@ -15,14 +15,20 @@
       - "Multipass installed: {{ multipass_installed }}"
       - "hypervisors.multipass: {{ hypervisors.multipass | default('undefined') }}"
 
-- name: Include install tasks
-  ansible.builtin.include_tasks: install.yml
-  when: not multipass_installed and hypervisors.multipass | default(false)
-
-- name: Include update tasks
-  ansible.builtin.include_tasks: update.yml
-  when: multipass_installed and hypervisors.multipass | default(false)
-
 - name: Include uninstall tasks
   ansible.builtin.include_tasks: uninstall.yml
   when: multipass_installed and not hypervisors.multipass | default(false)
+
+- name: When multipass is True
+  when: hypervisors.multipass | default(false)
+  block:
+    - name: Include install tasks
+      ansible.builtin.include_tasks: install.yml
+      when: not multipass_installed
+
+    - name: Include update tasks
+      ansible.builtin.include_tasks: update.yml
+      when: multipass_installed
+
+    - name: Manage VMs
+      ansible.builtin.include_tasks: manage.yml

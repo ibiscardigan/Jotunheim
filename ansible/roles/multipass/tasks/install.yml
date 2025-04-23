@@ -1,6 +1,6 @@
 ---
 - name: Install Multipass via Homebrew
-  community.general.homebrew:
+  community.general.homebrew_cask:
     name: "{{ multipass_package }}"
     state: present
   become: false

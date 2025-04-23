@@ -1,6 +1,6 @@
 ---
 - name: Ensure Multipass is upgraded to latest version
-  community.general.homebrew:
+  community.general.homebrew_cask:
     name: "{{ multipass_package }}"
     state: latest
   become: false

@@ -1,0 +1,16 @@
+---
+- name: Install Python using Homebrew
+  community.general.homebrew:
+    name: "python@{{ python_target_version.split('.')[0:2] | join('.') }}"
+    state: present
+    update_homebrew: yes
+  become: no
+
+- name: Set ansible_python_interpreter to Homebrew-installed Python
+  ansible.builtin.set_fact:
+    ansible_python_interpreter: "/opt/homebrew/opt/python@{{ python_target_version.split('.')[0:2] | join('.') }}/bin/python3"
+
+- name: Compute interpreter path from python_target_version
+  ansible.builtin.set_fact:
+    computed_python_interpreter: >-
+      /opt/homebrew/opt/python@{{ python_target_version.split('.')[0:2] | join('.') }}/bin/python3
