@@ -16,11 +16,11 @@ client {
   # Add metadata for job constraints
   meta {
     environment = "{{ nodes[0] }}"
-    role        = client
-    datacenter  = "{{ nomad_datacenter }}"            # your base DC
+    datacenter  = "{{ nomad_datacenter }}"
+    domains = "{{ host_domains | join(',') }}"
   }
 }
-
+# extra comment to test deploy
 # Optional telemetry
 # telemetry {
 #   disable_hostname = false

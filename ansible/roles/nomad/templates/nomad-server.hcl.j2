@@ -7,8 +7,8 @@ client {
   enabled = true
   meta {
     environment = "{{ nodes[0] }}"
-    role        = server
-    datacenter  = "{{ nomad_datacenter }}"            # your base DC
+    datacenter  = "{{ nomad_datacenter }}"
+    domains = "{{ host_domains | join(',') }}"
   }
 }
 
@@ -32,7 +32,7 @@ server {
   # retry_join as a JSON array
   retry_join = {{ nomad_server_peers | to_json }}
 }
-
+# extra comment to test deploy
 # Optional telemetry
 # telemetry {
 #   prometheus_retention_time = "30m"

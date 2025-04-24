@@ -63,6 +63,9 @@
   ansible.builtin.debug:
     var: nomad_server_peers
 
+- name: Include meta gatherers
+  ansible.builtin.include_tasks: meta.yml
+
 - name: Render Nomad server config
   ansible.builtin.template:
     src: nomad-server.hcl.j2
@@ -96,3 +99,6 @@
     enabled: yes
     state: started
   become: true
+
+- name: Flush pending handlers
+  meta: flush_handlers

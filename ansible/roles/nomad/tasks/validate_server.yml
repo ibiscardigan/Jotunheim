@@ -6,6 +6,8 @@
     return_content: yes
     status_code: 200
   register: nomad_leader
+  retries: 3
+  delay: 5
 
 - name: Fail if no Nomad leader returned
   ansible.builtin.assert:
