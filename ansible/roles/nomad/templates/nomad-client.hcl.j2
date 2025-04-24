@@ -14,10 +14,10 @@ client {
   # network_interface = "{{ nomad_client_interface | default(ansible_default_ipv4.interface) }}"
 
   # Add metadata for job constraints
-  meta = {
-  {% for k,v in nomad_client_meta|default({}) %}
-    {{ k }} = "{{ v }}"{{ "," if not loop.last }}
-  {% endfor %}
+  meta {
+    environment = "{{ nodes[0] }}"
+    role        = client
+    datacenter  = "{{ nomad_datacenter }}"            # your base DC
   }
 }
 

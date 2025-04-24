@@ -3,6 +3,16 @@ datacenter = "{{ nomad_datacenter }}"
 data_dir   = "{{ nomad_data_dir }}"
 bind_addr  = "{{ nomad_bind_addr }}"
 
+client {
+  enabled = true
+  meta {
+    environment = "{{ nodes[0] }}"
+    role        = server
+    datacenter  = "{{ nomad_datacenter }}"            # your base DC
+  }
+}
+
+
 advertise {
   http = "{{ ansible_host }}:{{ nomad_http_port }}"
   rpc  = "{{ ansible_host }}:{{ nomad_rpc_port }}"

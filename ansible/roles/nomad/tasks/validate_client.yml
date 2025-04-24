@@ -1,0 +1,35 @@
+---
+- name: Ensure Nomad service is running
+  ansible.builtin.systemd:
+    name: nomad
+    state: started
+    enabled: true
+
+- name: Wait for local Nomad HTTP API to be ready
+  ansible.builtin.uri:
+    url: http://{{ ansible_host }}:4646/v1/agent/self
+    method: GET
+    status_code: 200
+    return_content: yes
+  register: nomad_self
+  retries: 5
+  delay: 2
+  until: nomad_self.status == 200
+
+- name: Assert this agent is configured as a client
+  ansible.builtin.assert:
+    that:
+      - (nomad_self.json['config']['Client']['Enabled'] | bool)
+      - not (nomad_self.json['config']['Server']['Enabled'] | bool)
+    fail_msg: >
+      Nomad agent role mismatch:
+      Client.Enabled={{ nomad_self.json['config']['Client']['Enabled'] }},
+      Server.Enabled={{ nomad_self.json['config']['Server']['Enabled'] }}
+
+- name: Assert client sees at least one server peer
+  ansible.builtin.assert:
+    that:
+      - (nomad_self.json['stats']['client']['known_servers'].split(',') | length) > 0
+    fail_msg: >
+      Nomad client does not see any servers:
+      known_servers={{ nomad_self.json['stats']['client']['known_servers'] }}

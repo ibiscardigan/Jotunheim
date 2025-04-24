@@ -28,6 +28,7 @@
     firstmatch: true
     create: yes
     mode: '0660'
+  changed_when: false
 
 - name: Load base host attributes
   ansible.builtin.set_fact:
@@ -81,6 +82,7 @@
     loop_var: item
   notify:
     - Refresh inventory
+  changed_when: false
 
 - name: Flush handlers
   meta: flush_handlers

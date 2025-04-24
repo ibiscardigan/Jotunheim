@@ -1,0 +1,32 @@
+---
+- name: Validate Nomad HTTP API is reachable
+  ansible.builtin.uri:
+    url: "http://{{ ansible_host }}:{{ nomad_http_port | default(4646) }}/v1/status/leader"
+    method: GET
+    return_content: yes
+    status_code: 200
+  register: nomad_leader
+
+- name: Fail if no Nomad leader returned
+  ansible.builtin.assert:
+    that:
+      - nomad_leader.content | trim != ""
+    fail_msg: >
+      Nomad HTTP API returned an empty leader response—
+      check that the agent is running and `-bootstrap-expect=3` was set.
+
+- name: Fetch Nomad Raft peers
+  ansible.builtin.uri:
+    url: "http://{{ ansible_host }}:{{ nomad_http_port | default(4646) }}/v1/status/peers"
+    method: GET
+    return_content: yes
+    status_code: 200
+  register: nomad_peers
+
+- name: Assert Nomad quorum achieved
+  ansible.builtin.assert:
+    that:
+      - nomad_peers.json | length >= (expected_nomad_servers | default(3))
+    fail_msg: >
+      Nomad cluster only has {{ nomad_peers.json | length }} peers;
+      expected at least {{ expected_nomad_servers | default(3) }}.

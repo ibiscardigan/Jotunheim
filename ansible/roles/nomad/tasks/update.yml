@@ -22,7 +22,6 @@
 - name: Gather all hosts under node group
   ansible.builtin.set_fact:
     all_node_hosts: "{{ groups[nodes[0]] | unique }}"
-  delegate_to: localhost
 
 - name: Gather Nomad server peers from inventory
   ansible.builtin.set_fact:
@@ -42,7 +41,7 @@
       {% endfor -%}
       {{ peers }}
 
-- name: Gather Nomad server peers from inventory
+- name: Gather Nomad server peers from inventory for clients
   ansible.builtin.set_fact:
     nomad_client_servers: >-
       {% set peers = [] -%}
@@ -73,6 +72,7 @@
     mode: '0644'
   when: orchestration.nomad == 'server'
   become: true
+  notify: Restart nomad
 
 - name: Render Nomad client config
   ansible.builtin.template:
@@ -83,6 +83,7 @@
     mode: '0644'
   when: orchestration.nomad != 'false' and orchestration.nomad != 'server'
   become: true
+  notify: Restart nomad
 
 - name: Reload systemd to pick up Nomad service
   ansible.builtin.systemd:
@@ -93,5 +94,5 @@
   ansible.builtin.systemd:
     name: nomad
     enabled: yes
-    state: restarted
+    state: started
   become: true

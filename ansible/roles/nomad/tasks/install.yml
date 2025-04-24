@@ -45,7 +45,7 @@
     nomad_arch: "{{ arch_map[ansible_architecture] | default(ansible_architecture) }}"
     nomad_zip: "nomad_{{ nomad_version }}_{{ ansible_system | lower }}_{{ arch_map[ansible_architecture] | default(ansible_architecture) }}.zip"
 
-- name: Download Nomad {{ nomad_version }} for {{ ansible_system | lower }}/{{ arch_map[ansible_architecture] | default(ansible_architecture) }}
+- name: Download Nomad nomad
   ansible.builtin.get_url:
     url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/{{ nomad_zip }}"
     dest: "/tmp/{{ nomad_zip }}"

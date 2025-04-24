@@ -37,7 +37,7 @@ observability:
 orchestration:
   ansible: false
   artifactory: false
-  consul: false
+  consul: server
   docker: false
   homebrew: false
   nomad: server
