@@ -1,0 +1,27 @@
+# Global
+datacenter = "{{ nomad_datacenter }}"
+data_dir   = "{{ nomad_data_dir }}"
+bind_addr  = "{{ nomad_bind_addr }}"
+
+# Client mode
+client {
+  enabled = true
+
+  # How to find your servers:
+  servers = {{ nomad_client_servers | to_json }}
+
+  # Optional network selection
+  # network_interface = "{{ nomad_client_interface | default(ansible_default_ipv4.interface) }}"
+
+  # Add metadata for job constraints
+  meta = {
+  {% for k,v in nomad_client_meta|default({}) %}
+    {{ k }} = "{{ v }}"{{ "," if not loop.last }}
+  {% endfor %}
+  }
+}
+
+# Optional telemetry
+# telemetry {
+#   disable_hostname = false
+# }

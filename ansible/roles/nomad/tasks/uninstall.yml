@@ -1,0 +1,58 @@
+---
+- name: Stop Nomad service
+  ansible.builtin.systemd:
+    name: nomad
+    state: stopped
+  become: true
+  ignore_errors: true
+
+- name: Disable Nomad service
+  ansible.builtin.systemd:
+    name: nomad
+    enabled: false
+  become: true
+  ignore_errors: true
+
+- name: Remove Nomad systemd unit
+  ansible.builtin.file:
+    path: /etc/systemd/system/nomad.service
+    state: absent
+  become: true
+
+- name: Reload systemd daemon
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  become: true
+
+- name: Remove Nomad binary directory
+  ansible.builtin.file:
+    path: "{{ nomad_bin_dir }}/nomad"
+    state: absent
+  become: true
+
+- name: Remove Nomad data directory
+  ansible.builtin.file:
+    path: "{{ nomad_data_dir }}"
+    state: absent
+  become: true
+
+- name: Remove Nomad config directory
+  ansible.builtin.file:
+    path: "{{ nomad_config_dir }}"
+    state: absent
+  become: true
+
+- name: Remove Nomad user
+  ansible.builtin.user:
+    name: "{{ nomad_user }}"
+    state: absent
+    remove: yes         # remove home, mail spool, and files owned by the user
+  become: true
+  ignore_errors: true  # in case user does not exist
+
+- name: Remove Nomad group
+  ansible.builtin.group:
+    name: "{{ nomad_group }}"
+    state: absent
+  become: true
+  ignore_errors: true

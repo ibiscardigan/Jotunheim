@@ -1,0 +1,65 @@
+---
+- name: Ensure OS packages needed for Nomad installation
+  ansible.builtin.apt:
+    name: "{{ nomad_apt_requirements }}"
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Ensure nomad group exists
+  ansible.builtin.group:
+    name: "{{ nomad_group }}"
+    state: present
+  become: true
+
+- name: Ensure nomad user exists
+  ansible.builtin.user:
+    name: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    shell: /usr/sbin/nologin
+    create_home: no
+    state: present
+  become: true
+
+- name: Create Nomad data directory
+  ansible.builtin.file:
+    path: "{{ nomad_data_dir }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0750"
+  become: true
+
+- name: Create Nomad config directory
+  ansible.builtin.file:
+    path: "{{ nomad_config_dir }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0755"
+  become: true
+
+- name: Set Nomad download parameters
+  ansible.builtin.set_fact:
+    nomad_os: "{{ ansible_system | lower }}"
+    nomad_arch: "{{ arch_map[ansible_architecture] | default(ansible_architecture) }}"
+    nomad_zip: "nomad_{{ nomad_version }}_{{ ansible_system | lower }}_{{ arch_map[ansible_architecture] | default(ansible_architecture) }}.zip"
+
+- name: Download Nomad {{ nomad_version }} for {{ ansible_system | lower }}/{{ arch_map[ansible_architecture] | default(ansible_architecture) }}
+  ansible.builtin.get_url:
+    url: "https://releases.hashicorp.com/nomad/{{ nomad_version }}/{{ nomad_zip }}"
+    dest: "/tmp/{{ nomad_zip }}"
+    mode: "0644"
+
+- name: Unarchive Nomad binary
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ nomad_zip }}"
+    dest: "{{ nomad_bin_dir }}/"
+    remote_src: yes
+    creates: "{{ nomad_bin_dir }}/nomad"
+  become: true
+
+- name: Ensure the nomad binary is executable
+  ansible.builtin.file:
+    path: "{{ nomad_bin_dir }}/nomad"
+    mode: "0755"

@@ -1,0 +1,8 @@
+---
+- name: Provision the orchestration components on hosts
+  hosts: "{{ target_hosts | default(nodes | default(['dev'])) }}"
+  gather_facts: yes
+
+  roles:
+    - role: nomad
+      when: ansible_system != 'Darwin'

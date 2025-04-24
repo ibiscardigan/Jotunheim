@@ -1,0 +1,3 @@
+---
+nomad_datacenter: maroubra_rack02
+nomad_environment: dev

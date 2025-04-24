@@ -1,0 +1,30 @@
+# Global
+datacenter = "{{ nomad_datacenter }}"
+data_dir   = "{{ nomad_data_dir }}"
+bind_addr  = "{{ nomad_bind_addr }}"
+
+advertise {
+  http = "{{ ansible_host }}:{{ nomad_http_port }}"
+  rpc  = "{{ ansible_host }}:{{ nomad_rpc_port }}"
+  serf = "{{ ansible_host }}:{{ nomad_serf_port }}"
+}
+
+# Enable the UI
+ui {
+  enabled = {{ nomad_ui | default(true) | lower }}
+}
+
+# Server mode
+server {
+  enabled          = true
+  bootstrap_expect = {{ nomad_bootstrap_expect }}
+
+  # retry_join as a JSON array
+  retry_join = {{ nomad_server_peers | to_json }}
+}
+
+# Optional telemetry
+# telemetry {
+#   prometheus_retention_time = "30m"
+#   disable_hostname = false
+# }

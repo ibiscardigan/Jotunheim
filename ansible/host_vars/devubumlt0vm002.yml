@@ -40,3 +40,4 @@ orchestration:
   consul: false
   docker: false
   homebrew: false
+  nomad: server

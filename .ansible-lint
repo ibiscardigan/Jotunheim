@@ -2,6 +2,7 @@ profile: basic
 
 skip_list:
   - run-once[task]
+  - literal-compare
 
 warn_list:
   - var-naming[no-role-prefix]

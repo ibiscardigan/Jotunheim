@@ -83,7 +83,7 @@
           ansible.builtin.set_fact:
             vm_list: "{{ inventory_hostname }}_{{ nodes | join('_') }}_vms"
 
-        - name: Delete running VMs not in desired list
+        - name: Delete running VMs
           ibiscardigan.multipass.hosts:
             name: "{{ item }}"
             state: absent

@@ -10,3 +10,6 @@
 
 - name: Run provision.yml
   import_playbook: provision.yml
+
+- name: Run orchestration.yml
+  import_playbook: orchestration.yml

@@ -1,0 +1,11 @@
+---
+pihole_port: 53
+nomad_http_port: 4646
+nomad_rpc_port: 4647
+nomad_serf_port: 4648
+frigate_port: 5000
+unbound_port: 5335
+home_assistant_port: 8123
+victoria_metrics_port: 8428
+consul_port: 8500
+node_exporter_port: 9100

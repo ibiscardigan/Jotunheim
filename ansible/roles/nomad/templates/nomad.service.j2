@@ -1,0 +1,18 @@
+[Unit]
+Description=Nomad Agent
+Documentation=https://www.nomadproject.io/docs/
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User={{ nomad_user }}
+Group={{ nomad_group }}
+ExecStart={{ nomad_bin_dir }}/nomad agent \
+  -config={{ nomad_config_dir }} \
+  {{ (orchestration.nomad == 'server') | ternary('-server', '-client') }}
+Restart=on-failure
+KillMode=process
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

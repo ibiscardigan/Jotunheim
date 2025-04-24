@@ -1,33 +1,31 @@
+# base_host_attributes
+ansible_python_interpreter: /usr/local/bin/python3.13
+
+# services
 datastores:
   kafka: false
   postgres: false
   redis: false
   timescaledb: false
-
 games:
   minecraft: false
-
 home:
   firefly_iii: false
   frigate_nvr: false
   home_assistant: false
   homepage: false
   mosquito_mqtt: false
-
 hypervisors:
   multipass: false
   proxmox: false
-
 management:
   docmost: false
   huly: false
-
 network:
   keepalived: false
   nginx: false
   pihole: false
   unbound: false
-
 observability:
   alertmanager: false
   grafana: false
@@ -36,7 +34,6 @@ observability:
   promtail: false
   victoria_metrics: false
   vmagent: false
-
 orchestration:
   ansible: false
   artifactory: false

@@ -1,0 +1,43 @@
+---
+- name: Debug orchestration.nomad var
+  ansible.builtin.debug:
+    var: orchestration.nomad
+
+- name: Check for existing Nomad binary
+  ansible.builtin.stat:
+    path: "{{ nomad_bin_dir }}/nomad"
+  register: nomad_bin
+
+- name: Get installed Nomad version
+  ansible.builtin.command:
+    cmd: "{{ nomad_bin_dir }}/nomad version"
+  register: installed_nomad_version
+  when: nomad_bin.stat.exists
+
+- name: Report existing Nomad version
+  ansible.builtin.debug:
+    msg: >-
+      Nomad is installed at {{ nomad_bin_dir }}/nomad,
+      version: {{ installed_nomad_version.stdout | default('unknown') }}
+  when: nomad_bin.stat.exists
+
+- name: Report that Nomad is not installed
+  ansible.builtin.debug:
+    msg: "Nomad is not installed on this host"
+  when: not nomad_bin.stat.exists
+
+- name: Uninstall Nomad if disabled
+  ansible.builtin.include_tasks: uninstall.yml
+  when:
+    - orchestration.nomad == false
+    - nomad_bin.stat.exists
+
+- name: When Nomad is not false
+  when: orchestration.nomad is not false | default(false)
+  block:
+    - name: Include install tasks
+      ansible.builtin.include_tasks: install.yml
+      when: not nomad_bin.stat.exists
+
+    - name: Include update tasks
+      ansible.builtin.include_tasks: update.yml

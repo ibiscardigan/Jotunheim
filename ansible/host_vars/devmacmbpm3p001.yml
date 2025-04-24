@@ -39,4 +39,5 @@ orchestration:
   artifactory: false
   consul: false
   docker: false
-  homebrew: false
+  homebrew: true
+  nomad: true

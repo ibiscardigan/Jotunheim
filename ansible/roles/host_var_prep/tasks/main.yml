@@ -7,6 +7,28 @@
   ansible.builtin.debug:
     msg: "Target Hosts: {{ target_hosts | join(', ') }}"
 
+- name: Ensure host_vars file exists for each host
+  vars:
+    host_vars_path: "{{ ansible_env.HOME }}/Jotunheim/ansible/host_vars"
+  loop: "{{ target_hosts }}"
+  ansible.builtin.file:
+    path: "{{ host_vars_path }}/{{ item }}.yml"
+    state: touch
+    mode: '0644'
+  changed_when: false
+
+- name: Ensure host_vars files start with '---'
+  vars:
+    host_vars_path: "{{ ansible_env.HOME }}/Jotunheim/ansible/host_vars"
+  loop: "{{ target_hosts }}"
+  ansible.builtin.lineinfile:
+    path: "{{ host_vars_path }}/{{ item }}.yml"
+    line: "---"
+    insertbefore: BOF
+    firstmatch: true
+    create: yes
+    mode: '0660'
+
 - name: Load base host attributes
   ansible.builtin.set_fact:
     base_attrs: >-

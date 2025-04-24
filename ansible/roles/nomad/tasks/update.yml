@@ -1,0 +1,97 @@
+- name: Install systemd service file for Nomad
+  ansible.builtin.template:
+    src: "nomad.service.j2"
+    dest: "/etc/systemd/system/nomad.service"
+    owner: root
+    group: root
+    mode: "0644"
+  become: true
+
+- name: Ensure Nomad config & data dirs exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: '0755'
+  loop:
+    - "{{ nomad_config_dir }}"
+    - "{{ nomad_data_dir }}"
+  become: true
+
+- name: Gather all hosts under node group
+  ansible.builtin.set_fact:
+    all_node_hosts: "{{ groups[nodes[0]] | unique }}"
+  delegate_to: localhost
+
+- name: Gather Nomad server peers from inventory
+  ansible.builtin.set_fact:
+    nomad_server_peers: >-
+      {% set peers = [] -%}
+      {% for host in nodes
+            | map('extract', groups)
+            | flatten
+            | unique -%}
+        {% if hostvars[host].orchestration.nomad is defined
+              and hostvars[host].orchestration.nomad == 'server' -%}
+          {% set _ = peers.append(
+               hostvars[host].ansible_host
+               ~ ':' ~ (nomad_serf_port)
+             ) -%}
+        {% endif -%}
+      {% endfor -%}
+      {{ peers }}
+
+- name: Gather Nomad server peers from inventory
+  ansible.builtin.set_fact:
+    nomad_client_servers: >-
+      {% set peers = [] -%}
+      {% for host in nodes
+            | map('extract', groups)
+            | flatten
+            | unique -%}
+        {% if hostvars[host].orchestration.nomad is defined
+              and hostvars[host].orchestration.nomad == 'server' -%}
+          {% set _ = peers.append(
+               hostvars[host].ansible_host
+               ~ ':' ~ (nomad_rpc_port)
+             ) -%}
+        {% endif -%}
+      {% endfor -%}
+      {{ peers }}
+
+- name: Debug Nomad server peers
+  ansible.builtin.debug:
+    var: nomad_server_peers
+
+- name: Render Nomad server config
+  ansible.builtin.template:
+    src: nomad-server.hcl.j2
+    dest: "{{ nomad_config_dir }}/server.hcl"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: '0644'
+  when: orchestration.nomad == 'server'
+  become: true
+
+- name: Render Nomad client config
+  ansible.builtin.template:
+    src: nomad-client.hcl.j2
+    dest: "{{ nomad_config_dir }}/client.hcl"
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: '0644'
+  when: orchestration.nomad != 'false' and orchestration.nomad != 'server'
+  become: true
+
+- name: Reload systemd to pick up Nomad service
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  become: true
+
+- name: Enable and start Nomad service
+  ansible.builtin.systemd:
+    name: nomad
+    enabled: yes
+    state: restarted
+  become: true
