@@ -1,0 +1,45 @@
+---
+- name: Debug orchestration.consul var
+  ansible.builtin.debug:
+    var: orchestration.consul
+
+- name: Check for existing Consul binary
+  ansible.builtin.stat:
+    path: "{{ consul_bin_dir }}/consul"
+  register: consul_bin
+
+- name: Get installed Consul version
+  ansible.builtin.command:
+    cmd: "{{ consul_bin_dir }}/consul version"
+  register: installed_consul_version
+  when: consul_bin.stat.exists
+  changed_when: false
+
+- name: Report existing Consul version
+  ansible.builtin.debug:
+    msg: >-
+      Consul is installed at {{ consul_bin_dir }}/consul,
+      version: {{ installed_consul_version.stdout | default('unknown') }}
+  when: consul_bin.stat.exists
+
+- name: Report that Consul is not installed
+  ansible.builtin.debug:
+    msg: "Consul is not installed on this host"
+  when: not consul_bin.stat.exists
+
+- name: Uninstall Consul if disabled
+  ansible.builtin.include_tasks: uninstall.yml
+  when:
+    - orchestration.consul == false
+    - consul_bin.stat.exists
+
+- name: When Consul is not false
+  when: orchestration.consul is not false | default(false)
+  become: true
+  block:
+    - name: Include install tasks
+      ansible.builtin.include_tasks: install.yml
+      when: not consul_bin.stat.exists
+
+    - name: Include update tasks
+      ansible.builtin.include_tasks: update.yml

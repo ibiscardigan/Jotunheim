@@ -2,6 +2,7 @@
 nomad_version: "1.6.3"
 nomad_user: nomad
 nomad_group: nomad
+nomad_service: nomad
 
 nomad_apt_requirements:
   - unzip
@@ -13,7 +14,7 @@ nomad_data_dir: /opt/nomad
 
 # Network
 nomad_bind_addr: "0.0.0.0"
-nomad_datacentre: maroubra_rack02
+nomad_datacenter: "{{ datacenter }}"
 
 # Server config
 nomad_bootstrap_expect: 3

@@ -6,3 +6,6 @@
   roles:
     - role: nomad
       when: ansible_system != 'Darwin'
+
+    - role: consul
+      when: ansible_system != 'Darwin'

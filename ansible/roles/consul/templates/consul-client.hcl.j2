@@ -1,0 +1,12 @@
+# Global
+datacenter = "{{ consul_datacenter }}"
+data_dir = "{{ consul_data_dir }}"
+bind_addr = "{{ consul_bind_addr }}"
+advertise_addr = "{{ ansible_host }}"
+
+# Enable the UI
+ui = false
+
+# Client mode
+server = false
+retry_join = {{ consul_server_peers | to_json }}

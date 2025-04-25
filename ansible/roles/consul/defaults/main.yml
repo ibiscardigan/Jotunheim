@@ -1,0 +1,20 @@
+---
+consul_version: "1.14.0"
+consul_user: consul
+consul_group: consul
+consul_service: consul
+
+consul_apt_requirements:
+  - unzip
+
+# Dirs
+consul_bin_dir: /usr/local/bin
+consul_config_dir: /etc/consul.d
+consul_data_dir: /opt/consul/data
+
+# Network
+consul_bind_addr: "0.0.0.0"
+consul_datacenter: "{{ datacenter }}"
+
+# Server config
+consul_bootstrap_expect: 3

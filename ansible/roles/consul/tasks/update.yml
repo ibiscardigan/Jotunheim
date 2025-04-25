@@ -1,0 +1,75 @@
+---
+- name: Ensure Consul config directory exists
+  ansible.builtin.file:
+    path: "{{ consul_config_dir }}"
+    state: directory
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: "0755"
+
+- name: Ensure Consul data directory exists
+  ansible.builtin.file:
+    path: "{{ consul_data_dir }}"
+    state: directory
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: "0750"
+
+- name: Gather all hosts under node group
+  ansible.builtin.set_fact:
+    all_node_hosts: "{{ groups[nodes[0]] | unique }}"
+
+- name: Gather Consul server peers from inventory
+  ansible.builtin.set_fact:
+    consul_server_peers: >-
+      {% set peers = [] -%}
+      {% for host in nodes
+            | map('extract', groups)
+            | flatten
+            | unique -%}
+        {% if hostvars[host].orchestration.consul is defined
+              and hostvars[host].orchestration.consul == 'server' -%}
+          {% set _ = peers.append(hostvars[host].ansible_host) -%}
+        {% endif -%}
+      {% endfor -%}
+      {{ peers }}
+
+- name: Debug Consul server peers
+  ansible.builtin.debug:
+    var: consul_server_peers
+
+- name: Deploy Consul server config
+  ansible.builtin.template:
+    src: "consul-server.hcl.j2"
+    dest: "{{ consul_config_dir }}/server.hcl"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: "0644"
+  when: orchestration.consul == "server"
+  notify:
+    - Restart Consul
+
+- name: Deploy Consul client config
+  ansible.builtin.template:
+    src: "consul-client.hcl.j2"
+    dest: "{{ consul_config_dir }}/client.hcl"
+    owner: "{{ consul_user }}"
+    group: "{{ consul_group }}"
+    mode: "0644"
+  when: orchestration.consul == true
+  notify:
+    - Restart Consul
+
+- name: Deploy Consul systemd unit
+  ansible.builtin.template:
+    src: "consul.service.j2"
+    dest: "/etc/systemd/system/{{ consul_service }}.service"
+    mode: "0644"
+  notify:
+    - Reload systemd
+
+- name: Ensure Consul service is enabled and running
+  ansible.builtin.systemd:
+    name: "{{ consul_service }}"
+    enabled: true
+    state: started

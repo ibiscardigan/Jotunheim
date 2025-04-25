@@ -1,0 +1,62 @@
+---
+- name: Ensure consul group exists
+  ansible.builtin.group:
+    name: consul
+    state: present
+    system: true
+
+- name: Ensure consul user exists
+  ansible.builtin.user:
+    name: consul
+    group: consul
+    comment: "Consul service account"
+    system: true
+    shell: /sbin/nologin
+    create_home: false
+
+- name: Ensure OS packages needed for Consul installation
+  ansible.builtin.apt:
+    name: "{{ consul_apt_requirements }}"
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Check if Consul binary already exists
+  ansible.builtin.stat:
+    path: "{{ consul_bin_dir }}/consul"
+  register: consul_bin
+
+- name: Set consul download parameters
+  ansible.builtin.set_fact:
+    consul_os: "{{ ansible_system | lower }}"
+    consul_arch: "{{ arch_map[ansible_architecture] | default(ansible_architecture) }}"
+    consul_zip: "consul_{{ consul_version }}_{{ ansible_system | lower }}_{{ arch_map[ansible_architecture] | default(ansible_architecture) }}.zip"
+
+- name: Download Consul {{ consul_version }}
+  ansible.builtin.get_url:
+    url: "https://releases.hashicorp.com/consul/{{ consul_version }}/{{ consul_zip }}"
+    dest: "/tmp/consul_{{ consul_version }}.zip"
+    mode: '0644'
+  when: not consul_bin.stat.exists
+
+- name: Unarchive Consul binary to {{ consul_bin_dir }}
+  ansible.builtin.unarchive:
+    src: "/tmp/consul_{{ consul_version }}.zip"
+    dest: "{{ consul_bin_dir }}"
+    remote_src: true
+    creates: "{{ consul_bin_dir }}/consul"
+  when: not consul_bin.stat.exists
+
+- name: Ensure Consul binary is executable
+  ansible.builtin.file:
+    path: "{{ consul_bin_dir }}/consul"
+    mode: '0755'
+    owner: root
+    group: root
+  when: not consul_bin.stat.exists
+
+- name: Remove downloaded archive
+  ansible.builtin.file:
+    path: "/tmp/consul_{{ consul_version }}.zip"
+    state: absent
+  when: not consul_bin.stat.exists

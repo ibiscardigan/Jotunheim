@@ -35,6 +35,7 @@
 
 - name: When Nomad is not false
   when: orchestration.nomad is not false | default(false)
+  become: true
   block:
     - name: Include install tasks
       ansible.builtin.include_tasks: install.yml

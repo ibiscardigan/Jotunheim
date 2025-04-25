@@ -63,3 +63,8 @@
   ansible.builtin.file:
     path: "{{ nomad_bin_dir }}/nomad"
     mode: "0755"
+
+- name: Remove downloaded archive
+  ansible.builtin.file:
+    path: "/tmp/{{ nomad_zip }}"
+    state: absent
