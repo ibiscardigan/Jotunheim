@@ -75,7 +75,9 @@
     mode: '0644'
   when: orchestration.nomad == 'server'
   become: true
-  notify: Restart nomad
+  notify:
+    - Restart Nomad
+    - Validate Nomad
 
 - name: Render Nomad client config
   ansible.builtin.template:
@@ -86,7 +88,9 @@
     mode: '0644'
   when: orchestration.nomad != 'false' and orchestration.nomad != 'server'
   become: true
-  notify: Restart nomad
+  notify:
+    - Restart Nomad
+    - Validate Nomad
 
 - name: Reload systemd to pick up Nomad service
   ansible.builtin.systemd:

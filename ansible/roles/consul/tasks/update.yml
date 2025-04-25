@@ -48,6 +48,7 @@
   when: orchestration.consul == "server"
   notify:
     - Restart Consul
+    - Validate Consul
 
 - name: Deploy Consul client config
   ansible.builtin.template:
@@ -59,6 +60,7 @@
   when: orchestration.consul == true
   notify:
     - Restart Consul
+    - Validate Consul
 
 - name: Deploy Consul systemd unit
   ansible.builtin.template:
@@ -67,6 +69,7 @@
     mode: "0644"
   notify:
     - Reload systemd
+    - Validate Consul
 
 - name: Ensure Consul service is enabled and running
   ansible.builtin.systemd:

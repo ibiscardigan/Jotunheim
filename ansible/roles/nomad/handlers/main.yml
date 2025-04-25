@@ -1,7 +1,23 @@
 ---
-- name: Restart nomad
+- name: Reload systemd
   ansible.builtin.systemd:
-    name: nomad
-    state: restarted
     daemon_reload: true
+  listen: Reload systemd
+
+- name: Restart Nomad
+  ansible.builtin.systemd:
+    name: "{{ nomad_service }}"
+    enabled: true
+    state: restarted
+  listen: Restart Nomad
   become: true
+
+- name: Validate Nomad
+  ansible.builtin.include_tasks: validate_server.yml
+  when: orchestration.nomad == "server"
+  listen: Validate Nomad
+
+- name: Validate Nomad (client)
+  ansible.builtin.include_tasks: validate_client.yml
+  when: orchestration.nomad == true
+  listen: Validate Nomad

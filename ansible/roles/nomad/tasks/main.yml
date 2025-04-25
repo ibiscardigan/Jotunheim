@@ -9,11 +9,17 @@
   register: nomad_bin
 
 - name: Get installed Nomad version
-  ansible.builtin.command:
-    cmd: "{{ nomad_bin_dir }}/nomad version"
-  register: installed_nomad_version
   when: nomad_bin.stat.exists
-  changed_when: false
+  block:
+    - name: Get installed Nomad version
+      ansible.builtin.command:
+        cmd: "{{ nomad_bin_dir }}/nomad version"
+      register: installed_nomad_version
+      changed_when: false
+  rescue:
+    - name: Fallback Failed to read Nomad version
+      ansible.builtin.debug:
+        msg: "Nomad binary exists but failed to report version"
 
 - name: Report existing Nomad version
   ansible.builtin.debug:
@@ -33,7 +39,7 @@
     - orchestration.nomad == false
     - nomad_bin.stat.exists
 
-- name: When Nomad is not false
+- name: Install, update, and validate Nomad when enabled
   when: orchestration.nomad is not false | default(false)
   become: true
   block:
@@ -44,10 +50,10 @@
     - name: Include update tasks
       ansible.builtin.include_tasks: update.yml
 
-    - name: Validate server its working
+    - name: Validate server is working
       ansible.builtin.include_tasks: validate_server.yml
       when: orchestration.nomad == "server"
 
-    - name: Validate client its working
+    - name: Validate client is working
       ansible.builtin.include_tasks: validate_client.yml
       when: orchestration.nomad == true

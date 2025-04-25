@@ -9,11 +9,17 @@
   register: consul_bin
 
 - name: Get installed Consul version
-  ansible.builtin.command:
-    cmd: "{{ consul_bin_dir }}/consul version"
-  register: installed_consul_version
   when: consul_bin.stat.exists
-  changed_when: false
+  block:
+    - name: Get installed Consul version
+      ansible.builtin.command:
+        cmd: "{{ consul_bin_dir }}/consul version"
+      register: installed_consul_version
+      changed_when: false
+  rescue:
+    - name: Fallback Failed to read Consul version
+      ansible.builtin.debug:
+        msg: "Consul binary exists but failed to report version"
 
 - name: Report existing Consul version
   ansible.builtin.debug:
@@ -33,7 +39,7 @@
     - orchestration.consul == false
     - consul_bin.stat.exists
 
-- name: When Consul is not false
+- name: Install, update, and validate Consul when enabled
   when: orchestration.consul is not false | default(false)
   become: true
   block:
@@ -44,10 +50,10 @@
     - name: Include update tasks
       ansible.builtin.include_tasks: update.yml
 
-    - name: Validate server its working
+    - name: Validate server is working
       ansible.builtin.include_tasks: validate_server.yml
       when: orchestration.consul == "server"
 
-    - name: Validate client its working
+    - name: Validate client is working
       ansible.builtin.include_tasks: validate_client.yml
       when: orchestration.consul == true

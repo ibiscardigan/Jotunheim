@@ -1,3 +1,4 @@
+---
 - name: Reload systemd
   ansible.builtin.systemd:
     daemon_reload: true
@@ -10,3 +11,13 @@
     state: restarted
   listen: Restart Consul
   become: true
+
+- name: Validate Consul
+  ansible.builtin.include_tasks: validate_server.yml
+  when: orchestration.consul == "server"
+  listen: Validate Consul
+
+- name: Validate Consul (client)
+  ansible.builtin.include_tasks: validate_client.yml
+  when: orchestration.consul == true
+  listen: Validate Consul
