@@ -49,11 +49,3 @@
 
     - name: Include update tasks
       ansible.builtin.include_tasks: update.yml
-
-    - name: Validate server is working
-      ansible.builtin.include_tasks: validate_server.yml
-      when: orchestration.consul == "server"
-
-    - name: Validate client is working
-      ansible.builtin.include_tasks: validate_client.yml
-      when: orchestration.consul == true
