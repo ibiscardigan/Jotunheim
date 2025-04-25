@@ -1,0 +1,69 @@
+---
+- name: Wait for Consul HTTP API to be ready
+  ansible.builtin.uri:
+    url: "http://{{ ansible_host }}:{{ consul_http_port }}/v1/status/leader"
+    method: GET
+    return_content: yes
+    status_code: 200
+  register: consul_leader
+  until: consul_leader.status == 200 and consul_leader.content | length > 0
+  retries: 3
+  delay: 5
+
+- name: Assert a Consul leader exists
+  ansible.builtin.assert:
+    that:
+      - consul_leader.content | length > 0
+    fail_msg: "Consul HTTP API is up but returned no leader."
+
+- name: Fetch Consul peer list
+  ansible.builtin.uri:
+    url: "http://{{ ansible_host }}:{{ consul_http_port }}/v1/status/peers"
+    method: GET
+    return_content: yes
+    status_code: 200
+  register: consul_peers
+
+- name: Assert Consul server quorum reached
+  ansible.builtin.assert:
+    that:
+      - consul_peers.json | length >= consul_bootstrap_expect
+    fail_msg: >-
+      Consul cluster has only {{ consul_peers.json | length }} peers;
+      expected at least {{ consul_bootstrap_expect }}.
+
+- name: Test KV put/get
+  block:
+    - name: Write KV test key
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}:{{ consul_http_port }}/v1/kv/ansible/health"
+        method: PUT
+        status_code: 200
+        return_content: no
+        body: "ok"
+        body_format: raw
+
+    - name: Read KV test key
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}:{{ consul_http_port }}/v1/kv/ansible/health?raw"
+        method: GET
+        status_code: 200
+        return_content: yes
+      register: consul_kv
+
+    - name: Assert KV round-trip
+      ansible.builtin.assert:
+        that:
+          - consul_kv.content == "ok"
+        fail_msg: "Consul KV test failed (got {{ consul_kv.content }})."
+
+    - name: Remove KV test key
+      ansible.builtin.uri:
+        url: "http://{{ ansible_host }}:{{ consul_http_port }}/v1/kv/ansible/health"
+        method: DELETE
+        status_code: 200
+      when: consul_kv.content == "ok"
+  rescue:
+    - name: Warn about leaving test key behind
+      ansible.builtin.debug:
+        msg: "Consul KV test key was not removed because the test failed."

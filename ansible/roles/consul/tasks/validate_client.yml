@@ -1,0 +1,53 @@
+---
+- name: Ensure Consul service is running
+  ansible.builtin.systemd:
+    name: consul
+    state: started
+    enabled: true
+
+- name: Wait for local Consul HTTP API to be ready
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ consul_http_port }}/v1/status/leader"
+    method: GET
+    status_code: 200
+    return_content: yes
+  register: client_leader
+  until: client_leader.status == 200 and client_leader.content | length > 0
+  retries: 5
+  delay: 3
+
+- name: Assert client can reach the cluster leader
+  ansible.builtin.assert:
+    that:
+      - client_leader.content | length > 0
+    fail_msg: "Client HTTP API is up but returned no leader."
+
+- name: Fetch server peer list from client view
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ consul_http_port }}/v1/status/peers"
+    method: GET
+    return_content: yes
+    status_code: 200
+  register: client_peers
+
+- name: Assert client sees all expected servers
+  ansible.builtin.assert:
+    that:
+      - client_peers.json | length >= consul_bootstrap_expect
+    fail_msg: >-
+      Client only sees {{ client_peers.json | length }} peers;
+      expected at least {{ consul_bootstrap_expect }}.
+
+- name: Fetch local agent self‐info
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ consul_http_port }}/v1/agent/self"
+    method: GET
+    status_code: 200
+    return_content: yes
+  register: agent_self
+
+- name: Assert this node is configured as a client
+  ansible.builtin.assert:
+    that:
+      - "(agent_self.json['Config']['Server'] | bool) == false"
+    fail_msg: "This agent is not configured as a client."

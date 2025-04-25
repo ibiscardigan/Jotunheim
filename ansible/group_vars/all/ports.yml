@@ -6,6 +6,10 @@ nomad_serf_port: 4648
 frigate_port: 5000
 unbound_port: 5335
 home_assistant_port: 8123
+consul_rpc_port: 8300
+consul_lan_serf_port: 8301
+consul_wan_serf_port: 8302
 victoria_metrics_port: 8428
-consul_port: 8500
+consul_http_port: 8500
+consul_dns_port: 8600
 node_exporter_port: 9100
