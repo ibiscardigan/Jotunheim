@@ -1,0 +1,37 @@
+---
+- name: Stop PostgreSQL service
+  ansible.builtin.service:
+    name: postgresql
+    state: stopped
+  ignore_errors: true
+  become: true
+
+- name: Remove PostgreSQL packages
+  ansible.builtin.apt:
+    name:
+      - "postgresql-{{ postgresql_version }}"
+      - "postgresql-client-{{ postgresql_version }}"
+    state: absent
+    purge: yes
+    autoremove: yes
+    update_cache: yes
+  become: true
+
+- name: Remove PostgreSQL configuration directory
+  ansible.builtin.file:
+    path: "/etc/postgresql/{{ postgresql_version }}"
+    state: absent
+  become: true
+
+- name: Remove PostgreSQL data directory
+  ansible.builtin.file:
+    path: "{{ postgresql_data_directory | default('/var/lib/postgresql/' + postgresql_version + '/main') }}"
+    state: absent
+  become: true
+
+- name: Remove Consul service definition for PostgreSQL
+  ansible.builtin.file:
+    path: "/etc/consul.d/postgresql.json"
+    state: absent
+  notify: Reload Consul
+  become: true

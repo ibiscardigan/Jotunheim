@@ -9,10 +9,27 @@
   ansible.builtin.set_fact:
     multipass_installed: "{{ multipass_check.rc == 0 }}"
 
+- name: Check installed multipass version
+  ansible.builtin.command: "multipass version"
+  register: multipass_version_output
+  when: multipass_installed
+  changed_when: false
+
+- name: Set fact for multipass_version
+  ansible.builtin.set_fact:
+    multipass_version: >-
+      {{
+        (multipass_version_output.stdout_lines | select('match', '^multipass\s+') | list).0
+        | regex_replace('^multipass\s+', '')
+        | regex_replace('\+.*$', '')
+      }}
+  when: multipass_installed
+
 - name: Debug state decision
   ansible.builtin.debug:
     msg:
       - "Multipass installed: {{ multipass_installed }}"
+      - "Multipass version: {{ multipass_version | default('Not installed') }}"
       - "hypervisors.multipass: {{ hypervisors.multipass | default('undefined') }}"
 
 - name: Include uninstall tasks
@@ -28,7 +45,9 @@
 
     - name: Include update tasks
       ansible.builtin.include_tasks: update.yml
-      when: multipass_installed
+      when:
+        - multipass_installed
+        - multipass_version is version(multipass_minimum_version, '<')
 
     - name: Manage VMs
       ansible.builtin.include_tasks: manage.yml

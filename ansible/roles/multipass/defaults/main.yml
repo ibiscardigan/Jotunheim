@@ -1,2 +1,3 @@
 ---
 multipass_package: multipass
+multipass_minimum_version: 1.15.1

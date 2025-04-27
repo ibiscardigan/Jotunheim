@@ -3,6 +3,7 @@
   ansible.builtin.systemd:
     daemon_reload: true
   listen: Reload systemd
+  become: true
 
 - name: Restart Consul
   ansible.builtin.systemd:

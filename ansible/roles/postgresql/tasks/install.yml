@@ -1,0 +1,35 @@
+---
+- name: Install apt-transport-https
+  ansible.builtin.apt:
+    name: apt-transport-https
+    state: present
+    update_cache: yes
+
+- name: Add PostgreSQL APT signing key
+  ansible.builtin.apt_key:
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    state: present
+
+- name: Add PostgreSQL repository
+  ansible.builtin.apt_repository:
+    repo: "deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+    state: present
+    filename: "postgresql"
+
+- name: Update apt cache after adding PostgreSQL repo
+  ansible.builtin.apt:
+    update_cache: yes
+
+- name: Install required packages
+  ansible.builtin.apt:
+    name: "{{ postgresql_apt_list }}"
+    state: present
+    update_cache: yes
+
+- name: Ensure pip, packaging, and psycopg2-binary exist for Python 3.13
+  ansible.builtin.shell: |
+    {{ ansible_python_interpreter }} -m ensurepip --upgrade
+    {{ ansible_python_interpreter }} -m pip install --upgrade pip
+    {{ ansible_python_interpreter }} -m pip install packaging psycopg2-binary
+  args:
+    executable: /bin/bash

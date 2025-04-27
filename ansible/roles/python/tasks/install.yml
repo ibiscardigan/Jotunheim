@@ -19,6 +19,11 @@
     - ansible_architecture in ["aarch64", "x86_64"]
     - ansible_facts['os_family'] == "Debian"
 
+- name: Import deploy_packages
+  ansible.builtin.include_tasks: deploy_packages.yml
+  when:
+    - ansible_facts['os_family'] == "Debian"
+
 - name: Debug computed ansible_python_interpreter
   ansible.builtin.debug:
     var: computed_python_interpreter

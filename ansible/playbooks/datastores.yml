@@ -1,0 +1,7 @@
+---
+- name: Provision the datastore components on hosts
+  hosts: "{{ target_hosts | default(nodes | default(['dev'])) }}"
+  gather_facts: yes
+
+  roles:
+    - role: postgresql

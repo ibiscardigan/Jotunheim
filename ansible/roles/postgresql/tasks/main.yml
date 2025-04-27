@@ -1,0 +1,30 @@
+---
+- name: Check if PostgreSQL is already installed
+  ansible.builtin.shell: |
+    psql --version
+  register: postgres_installed
+  failed_when: false
+  changed_when: false
+
+- name: Uninstall if not required on host
+  ansible.builtin.import_tasks: uninstall.yml
+  when:
+    - postgres_installed.rc == 0
+    - not datastores.postgres
+
+- name: Install and update if postgres is expected on host
+  when: datastores.postgres is not false
+  become: true
+  block:
+    - name: Include install tasks if PostgreSQL is missing
+      ansible.builtin.import_tasks: install.yml
+      when:
+        - postgres_installed.rc != 0
+
+    - name: Include update tasks
+      ansible.builtin.import_tasks: update.yml
+
+    - name: Include Consul service registration tasks
+      ansible.builtin.import_tasks: consul.yml
+      when:
+        - postgresql_register_consul | default(false)

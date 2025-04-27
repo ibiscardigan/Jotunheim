@@ -13,3 +13,6 @@
 
 - name: Run orchestration.yml
   import_playbook: orchestration.yml
+
+- name: Run datastores.yml
+  import_playbook: datastores.yml

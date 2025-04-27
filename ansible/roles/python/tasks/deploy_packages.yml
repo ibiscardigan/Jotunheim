@@ -1,0 +1,7 @@
+---
+- name: Ensure pip, packaging exist for Python 3.13
+  ansible.builtin.shell: |
+    {{ ansible_python_interpreter }} -m ensurepip --upgrade
+    {{ ansible_python_interpreter }} -m pip install --upgrade pip
+  args:
+    executable: /bin/bash

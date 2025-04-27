@@ -25,4 +25,5 @@ python_x86_apt_dependencies:
   - libgdbm-compat-dev
   - libnss3-dev
   - liblzma-dev
+  - python3-pip
   - tk-dev

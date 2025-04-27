@@ -1,0 +1,16 @@
+---
+- name: Restart PostgreSQL
+  ansible.builtin.service:
+    name: postgresql
+    state: restarted
+  become: true
+
+- name: Reload Consul
+  ansible.builtin.service:
+    name: consul
+    state: reloaded
+  become: true
+
+- name: Validate Postgres
+  ansible.builtin.include_tasks: validate.yml
+  listen: Validate Postgres

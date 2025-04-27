@@ -1,0 +1,15 @@
+{
+  "service": {
+    "name": "postgresql",
+    "id": "postgresql-{{ ansible_hostname }}",
+    "port": {{ postgresql_port }},
+    "tags": ["database", "postgresql", "{{ datastores.postgres }}", "{{ nodes[0] }}"],
+    "check": {
+      "id": "postgresql-check",
+      "name": "PostgreSQL TCP on port {{ postgresql_port }}",
+      "tcp": "127.0.0.1:{{ postgresql_port }}",
+      "interval": "10s",
+      "timeout": "2s"
+    }
+  }
+}
