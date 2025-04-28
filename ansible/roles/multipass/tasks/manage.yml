@@ -3,6 +3,29 @@
   ansible.builtin.set_fact:
     vm_list: "{{ inventory_hostname }}_{{ nodes | join('_') }}_vms"
 
+- name: Debug
+  ansible.builtin.debug:
+    var: ansible_facts
+
+- name: Get default route info (macOS only)
+  command: route -n get default
+  register: default_route_info
+  changed_when: false
+  when: ansible_default_ipv4.device is not defined
+
+- name: Extract default interface
+  set_fact:
+    primary_interface: >-
+      {{
+        (default_route_info.stdout_lines
+          | select('search', '^ *interface: ')
+          | list
+          | first
+          | regex_replace('^ *interface: ', '')
+          | trim())
+      }}
+  when: ansible_default_ipv4.device is not defined
+
 - name: Create a Multipass VMs
   ibiscardigan.multipass.hosts:
     name: "{{ item }}"
@@ -11,7 +34,7 @@
     memory: "{{ hostvars[item]['memory'] | default(1) }}G"
     disk: "{{ hostvars[item]['storage'] | default(4) }}G"
     cloud_init: "{{ role_path }}/files/cloud-init.yml"
-    network: "{{ ansible_default_ipv4.device }}"
+    network: "{{ ansible_default_ipv4.device | default(primary_interface) }}"
     state: present
   loop: "{{ groups[vm_list] }}"
   register: created_vms
@@ -23,11 +46,11 @@
 - name: Inject ansible_host for each desired VM
   ansible.builtin.add_host:
     name: "{{ item.key }}"
-    ansible_host: "{{ item.value.ipv4[1] }}"
+    ansible_host: "{{ (item.value.ipv4 | default([]))[0] }}"
   loop: "{{ active_list.instances | dict2items }}"
   loop_control:
     label: "{{ item.key }}"
-  when: item.key in groups[ vm_list ]
+  when: item.key in groups[vm_list]
   changed_when: false
 
 - name: Debug ansible_host for each VM in {{ vm_group }}

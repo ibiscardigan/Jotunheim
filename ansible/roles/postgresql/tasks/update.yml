@@ -17,14 +17,11 @@
     enabled: yes
 
 - name: Check if postgres user already has a password
-  ansible.builtin.shell: |
-    sudo -u postgres psql -tAc "SELECT passwd IS NOT NULL FROM pg_shadow WHERE usename='postgres';"
-  args:
-    executable: /bin/bash
-    timeout: 10
+  ansible.builtin.shell: >
+    timeout 5 sudo -u postgres psql -tAc "SELECT passwd IS NOT NULL FROM pg_shadow WHERE usename='postgres';"
   register: postgres_password_check
   changed_when: false
-  failed_when: false
+  failed_when: postgres_password_check.rc not in [0, 124]
 
 - name: Set postgres password via peer auth before forcing md5
   ansible.builtin.command: >

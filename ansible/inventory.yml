@@ -31,3 +31,8 @@ devmacmbpm3p001_dev_vms:
       memory: 1
       storage: 8
       image: focal
+    devubumlt0vm005:
+      cores: 4
+      memory: 2
+      storage: 8
+      image: focal
