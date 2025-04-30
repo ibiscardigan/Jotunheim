@@ -43,10 +43,20 @@
   ibiscardigan.multipass.list:
   register: active_list
 
+- name: Set dynamic desired VM subnet prefix based on hypervisor ansible_host
+  ansible.builtin.set_fact:
+    desired_vm_subnet_prefix: "{{ ansible_host.split('.')[0:3] | join('.') }}"
+
 - name: Inject ansible_host for each desired VM
   ansible.builtin.add_host:
     name: "{{ item.key }}"
-    ansible_host: "{{ (item.value.ipv4 | default([]))[0] }}"
+    ansible_host: >-
+      {{
+        (item.value.ipv4 | default([]))
+        | select('search', '^' ~ desired_vm_subnet_prefix | regex_escape ~ '\.')
+        | list
+        | first
+      }}
   loop: "{{ active_list.instances | dict2items }}"
   loop_control:
     label: "{{ item.key }}"

@@ -31,6 +31,10 @@
     fail_msg: >-
       Consul cluster has only {{ consul_peers.json | length }} peers;
       expected at least {{ consul_bootstrap_expect }}.
+  register: quorum_check
+  retries: 2
+  delay: 5
+  until: quorum_check is succeeded
 
 - name: Test KV put/get
   block:
