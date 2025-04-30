@@ -88,3 +88,37 @@
             name: "{{ item }}"
             state: absent
           loop: "{{ groups[vm_list] }}"
+
+        - name: Load base host attributes
+          ansible.builtin.set_fact:
+            base_attrs: >-
+              {{ lookup('file', playbook_dir + '/../group_vars/all/base_host_attributes.yml')
+                | from_yaml }}
+          run_once: true
+          vars:
+            ansible_cacheable: true
+
+        - name: Set ansible_python_interpreter per host from base_host_attributes
+          vars:
+            host_var_prep_host_vars_path: "{{ ansible_env.HOME }}/Jotunheim/ansible/host_vars"
+            hostfile: "{{ host_var_prep_host_vars_path }}/{{ item }}.yml"
+            existing: >-
+              {{ lookup('file', hostfile) | default('', true) | from_yaml | default({}, true) }}
+            python_interp: >-
+              {{ base_attrs.ansible_python_interpreter }}
+            merged: >-
+              {{ existing | combine({'ansible_python_interpreter': python_interp}, recursive=True) }}
+            merged_yaml: >-
+              {{ merged
+                | to_nice_yaml(indent=0)
+                | regex_replace('^---\\n', '') }}
+          ansible.builtin.copy:
+            dest: "{{ hostfile }}"
+            content: "{{ merged_yaml }}"
+            mode: '0644'
+          loop: "{{ groups[vm_list] }}"
+          loop_control:
+            loop_var: item
+          notify:
+            - Refresh inventory
+          changed_when: false

@@ -9,7 +9,7 @@ staging:
 dev:
   hosts:
     devmacmbpm3p001:
-      ansible_host: 192.168.1.67
+      ansible_host: 192.168.1.214
   children:
     devmacmbpm3p001_dev_vms:
 
