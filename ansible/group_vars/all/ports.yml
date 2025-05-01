@@ -6,6 +6,8 @@ nomad_serf_port: 4648
 frigate_port: 5000
 unbound_port: 5335
 postgresql_port: 5432
+firefly_iii_service_port: 8080
+firefly_iii_host_port: 8080
 home_assistant_port: 8123
 consul_rpc_port: 8300
 consul_lan_serf_port: 8301

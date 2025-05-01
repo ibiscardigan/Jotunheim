@@ -1,0 +1,6 @@
+---
+postgresql_users:
+  home:
+    firefly_iii:
+      name: firefly_iii
+      password: "{{ postgresql_passwords.firefly_iii }}"

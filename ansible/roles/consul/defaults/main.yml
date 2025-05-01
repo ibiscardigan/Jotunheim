@@ -14,7 +14,7 @@ consul_data_dir: /opt/consul/data
 
 # Network
 consul_bind_addr: "0.0.0.0"
-consul_datacenter: "{{ datacenter }}"
+consul_datacenter: "{{ meta_datacenter }}"
 
 # Server config
 consul_bootstrap_expect: 3

@@ -14,7 +14,7 @@ nomad_data_dir: /opt/nomad
 
 # Network
 nomad_bind_addr: "0.0.0.0"
-nomad_datacenter: "{{ datacenter }}"
+nomad_datacenter: "{{ meta_datacenter }}"
 
 # Server config
 nomad_bootstrap_expect: 3

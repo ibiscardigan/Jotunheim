@@ -25,7 +25,7 @@
 
 - name: Set postgres password via peer auth before forcing md5
   ansible.builtin.command: >
-    sudo -u postgres psql -c "ALTER USER postgres PASSWORD '{{ postgresql_postgres_password }}';"
+    sudo -u postgres psql -c "ALTER USER postgres PASSWORD '{{ postgresql_passwords.default }}';"
   args:
     executable: /bin/bash
   when:
@@ -43,3 +43,22 @@
   notify:
     - Restart PostgreSQL
     - Validate Postgres
+
+- name: Include users.yml from defaults
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/defaults/users.yml"
+    name: postgresql_users_data
+
+- name: Set postgresql_users fact
+  ansible.builtin.set_fact:
+    postgresql_users: "{{ postgresql_users_data.postgresql_users }}"
+
+- name: Ensure users exist for this Postgres instance
+  community.postgresql.postgresql_user:
+    name: "{{ item.value.name }}"
+    password: "{{ item.value.password }}"
+    encrypted: true
+    login_user: postgres
+    login_password: "{{ postgresql_passwords.default }}"
+  loop: "{{ postgresql_users[datastores.postgres] | dict2items }}"
+  failed_when: false

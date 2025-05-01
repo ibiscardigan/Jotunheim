@@ -1,10 +1,7 @@
-# base_host_attributes
 ansible_python_interpreter: /usr/local/bin/python3.13
-
-# services
 datastores:
   kafka: false
-  postgres: home
+  postgres: false
   redis: false
   timescaledb: false
 games:
