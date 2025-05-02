@@ -7,12 +7,12 @@ firefly_iii_version: "latest"
 # Nomad job parameters
 firefly_iii_nomad_namespace: default
 firefly_iii_nomad_region: global
-firefly_iii_nomad_datacenters: ["{{ meta_datacentre }}"]
-firefly_iii_nomad_job_name: "firefly-iii"
-firefly_iii_nomad_group_name: "firefly"
+firefly_iii_nomad_datacenters: ["{{ meta_datacenter }}"]
+firefly_iii_nomad_job_name: "firefly_iii"
+firefly_iii_nomad_group_name: "firefly_iii"
 
 # Network
-firefly_iii_service_name: "firefly-iii"
+firefly_iii_service_name: "firefly_iii"
 
 # Storage
 firefly_iii_storage_enabled: true
@@ -26,16 +26,12 @@ firefly_iii_env:
   DB_CONNECTION: "pgsql"
   DB_HOST: "postgres.service.consul"
   DB_PORT: "5432"
-  DB_DATABASE: "firefly"
-  DB_USERNAME: "firefly"
-  DB_PASSWORD: "firefly_pass"
+  DB_DATABASE: "firefly_iii"
+  DB_USERNAME: "firefly_iii"
+  DB_PASSWORD: "{{ postgresql_passwords.firefly_iii }}"
   TRUSTED_PROXIES: "**"
   LOG_CHANNEL: "stack"
 
-# Consul service registration
+  # Consul service registration
 firefly_iii_consul_tags:
   - "urlprefix-/firefly"
-
-# Vault integration (optional)
-firefly_iii_use_vault: false
-firefly_iii_vault_path: "secret/firefly_iii"

@@ -26,12 +26,15 @@
     state: present
     update_cache: yes
 
-- name: Debug pip_executable
-  ansible.builtin.debug:
-    var: pip_executable
-
 - name: Install psycopg2-binary using pip module
   ansible.builtin.pip:
     name: psycopg2-binary
     executable: "{{ pip_executable }}"
     extra_args: --upgrade
+
+- name: Ensure cluster is created and started
+  ansible.builtin.command: >
+    pg_createcluster {{ postgresql_version }} main --start
+  args:
+    creates: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+  become: true

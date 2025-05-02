@@ -1,8 +1,14 @@
 ---
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+  become: true
+
 - name: Restart PostgreSQL
-  ansible.builtin.service:
+  ansible.builtin.systemd:
     name: postgresql
     state: restarted
+    enabled: true
   become: true
 
 - name: Reload Consul

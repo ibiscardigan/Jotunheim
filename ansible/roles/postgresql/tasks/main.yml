@@ -1,4 +1,12 @@
 ---
+- name: Resolve postgresql_data_directory
+  ansible.builtin.set_fact:
+    postgresql_data_directory: "/var/lib/postgresql/{{ postgresql_version }}/main"
+
+- name: Debug rendered data dir
+  ansible.builtin.debug:
+    var: postgresql_data_directory
+
 - name: Check if PostgreSQL is already installed
   ansible.builtin.shell: |
     psql --version

@@ -1,8 +1,14 @@
 ---
-- name: Configure postgresql.conf
+- name: Debug PostgreSQL directories
+  ansible.builtin.debug:
+    msg:
+      config: "{{ postgresql_config_directory }}"
+      data: "{{ postgresql_data_directory }}"
+
+- name: Deploy custom postgresql.conf
   ansible.builtin.template:
     src: postgresql.conf.j2
-    dest: "{{ postgresql_data_directory }}/postgresql.conf"
+    dest: "{{ postgresql_config_directory }}/postgresql.conf"
     owner: postgres
     group: postgres
     mode: '0644'
@@ -10,33 +16,10 @@
     - Restart PostgreSQL
     - Validate Postgres
 
-- name: Ensure PostgreSQL service is enabled and started
-  ansible.builtin.service:
-    name: postgresql
-    state: started
-    enabled: yes
-
-- name: Check if postgres user already has a password
-  ansible.builtin.shell: >
-    timeout 5 sudo -u postgres psql -tAc "SELECT passwd IS NOT NULL FROM pg_shadow WHERE usename='postgres';"
-  register: postgres_password_check
-  changed_when: false
-  failed_when: postgres_password_check.rc not in [0, 124]
-
-- name: Set postgres password via peer auth before forcing md5
-  ansible.builtin.command: >
-    sudo -u postgres psql -c "ALTER USER postgres PASSWORD '{{ postgresql_passwords.default }}';"
-  args:
-    executable: /bin/bash
-  when:
-    - postgresql_postgres_password is defined
-    - postgres_password_check.stdout is defined
-    - postgres_password_check.stdout.strip() == "f"
-
-- name: Configure pg_hba.conf
+- name: Deploy custom pg_hba.conf
   ansible.builtin.template:
     src: pg_hba.conf.j2
-    dest: "/etc/postgresql/{{ postgresql_version }}/main/pg_hba.conf"
+    dest: "{{ postgresql_config_directory }}/pg_hba.conf"
     owner: postgres
     group: postgres
     mode: '0640'
@@ -44,5 +27,11 @@
     - Restart PostgreSQL
     - Validate Postgres
 
-- name: Force immediate restart so pg_hba.conf is active
+- name: Ensure PostgreSQL is enabled
+  ansible.builtin.systemd:
+    name: postgresql
+    enabled: true
+  become: true
+
+- name: Flush config changes
   meta: flush_handlers

@@ -2,5 +2,5 @@
 postgresql_databases:
   home:
     firefly_iii:
-      name: firefly
+      name: firefly_iii
       owner: firefly_iii

@@ -1,4 +1,11 @@
 ---
+- name: Set default password for postgres user using peer auth
+  ansible.builtin.command: >
+    sudo -u postgres psql -c "ALTER USER postgres PASSWORD '{{ postgresql_passwords.default }}';"
+  args:
+    executable: /bin/bash
+  when: postgresql_passwords.default is defined
+
 - name: Include users.yml from defaults
   ansible.builtin.include_vars:
     file: "{{ role_path }}/defaults/users.yml"
