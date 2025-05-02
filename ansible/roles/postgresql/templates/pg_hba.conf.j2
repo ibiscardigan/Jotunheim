@@ -1,4 +1,14 @@
 # TYPE  DATABASE        USER            ADDRESS                  METHOD
-local   all             all                                      md5
-host    all             all             127.0.0.1/32             md5
+
+# Explicit rule for postgres using password
+local   all             postgres                                md5
+
+# All other local users
+local   all             all                                     md5
+
+# Localhost TCP
+host    all             all             127.0.0.1/32            md5
+host    all             all             ::1/128                 md5
+
+# Internal subnet
 host    all             all             {{ env_cidr[nodes[0]] }} md5

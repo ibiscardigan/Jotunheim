@@ -98,20 +98,20 @@
           vars:
             ansible_cacheable: true
 
-        - name: Set ansible_python_interpreter per host from base_host_attributes
+        - name: Set ansible_python_interpreter and pip_executable per host
           vars:
             host_var_prep_host_vars_path: "{{ ansible_env.HOME }}/Jotunheim/ansible/host_vars"
             hostfile: "{{ host_var_prep_host_vars_path }}/{{ item }}.yml"
             existing: >-
               {{ lookup('file', hostfile) | default('', true) | from_yaml | default({}, true) }}
-            python_interp: >-
-              {{ base_attrs.ansible_python_interpreter }}
+            python_interp: "{{ base_attrs.ansible_python_interpreter }}"
             merged: >-
-              {{ existing | combine({'ansible_python_interpreter': python_interp}, recursive=True) }}
-            merged_yaml: >-
-              {{ merged
-                | to_nice_yaml(indent=0)
-                | regex_replace('^---\\n', '') }}
+              {{ existing
+                | combine({
+                    'ansible_python_interpreter': python_interp,
+                    'pip_executable': '/usr/bin/pip3'
+                  }, recursive=True) }}
+            merged_yaml: "{{ merged | to_nice_yaml(indent=0) | regex_replace('^---\\n', '') }}"
           ansible.builtin.copy:
             dest: "{{ hostfile }}"
             content: "{{ merged_yaml }}"

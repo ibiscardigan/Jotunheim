@@ -1,5 +1,6 @@
 # base_host_attributes
 ansible_python_interpreter: /opt/homebrew/opt/python@3.13/bin/python3
+pip_executable: null
 
 # services
 datastores:

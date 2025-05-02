@@ -1,0 +1,6 @@
+---
+postgresql_databases:
+  home:
+    firefly_iii:
+      name: firefly
+      owner: firefly_iii

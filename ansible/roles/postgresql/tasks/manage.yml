@@ -1,0 +1,37 @@
+---
+- name: Include users.yml from defaults
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/defaults/users.yml"
+    name: postgresql_users_data
+
+- name: Set postgresql_users fact
+  ansible.builtin.set_fact:
+    postgresql_users: "{{ postgresql_users_data.postgresql_users }}"
+
+- name: Ensure users exist for this Postgres instance
+  community.postgresql.postgresql_user:
+    name: "{{ item.value.name }}"
+    password: "{{ item.value.password }}"
+    encrypted: true
+    login_user: postgres
+    login_password: "{{ postgresql_passwords.default }}"
+    login_host: "127.0.0.1"
+  loop: "{{ postgresql_users[datastores.postgres] | dict2items }}"
+
+- name: Load postgresql_databases
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/defaults/databases.yml"
+    name: postgresql_databases_data
+
+- name: Set postgresql_databases fact
+  ansible.builtin.set_fact:
+    postgresql_databases: "{{ postgresql_databases_data.postgresql_databases }}"
+
+- name: Ensure databases exist for this Postgres instance
+  community.postgresql.postgresql_db:
+    name: "{{ item.value.name }}"
+    owner: "{{ item.value.owner }}"
+    login_user: postgres
+    login_password: "{{ postgresql_passwords.default }}"
+    login_host: "127.0.0.1"
+  loop: "{{ postgresql_databases[datastores.postgres] | dict2items }}"

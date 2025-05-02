@@ -2,7 +2,7 @@
 - name: Configure postgresql.conf
   ansible.builtin.template:
     src: postgresql.conf.j2
-    dest: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+    dest: "{{ postgresql_data_directory }}/postgresql.conf"
     owner: postgres
     group: postgres
     mode: '0644'
@@ -44,21 +44,5 @@
     - Restart PostgreSQL
     - Validate Postgres
 
-- name: Include users.yml from defaults
-  ansible.builtin.include_vars:
-    file: "{{ role_path }}/defaults/users.yml"
-    name: postgresql_users_data
-
-- name: Set postgresql_users fact
-  ansible.builtin.set_fact:
-    postgresql_users: "{{ postgresql_users_data.postgresql_users }}"
-
-- name: Ensure users exist for this Postgres instance
-  community.postgresql.postgresql_user:
-    name: "{{ item.value.name }}"
-    password: "{{ item.value.password }}"
-    encrypted: true
-    login_user: postgres
-    login_password: "{{ postgresql_passwords.default }}"
-  loop: "{{ postgresql_users[datastores.postgres] | dict2items }}"
-  failed_when: false
+- name: Force immediate restart so pg_hba.conf is active
+  meta: flush_handlers

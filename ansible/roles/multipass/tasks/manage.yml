@@ -3,10 +3,6 @@
   ansible.builtin.set_fact:
     vm_list: "{{ inventory_hostname }}_{{ nodes | join('_') }}_vms"
 
-- name: Debug
-  ansible.builtin.debug:
-    var: ansible_facts
-
 - name: Get default route info (macOS only)
   command: route -n get default
   register: default_route_info

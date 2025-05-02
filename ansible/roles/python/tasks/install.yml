@@ -5,7 +5,7 @@
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: yes
-    cache_valid_time: 7200   # optional: only update if cache is older than 2 hours
+    cache_valid_time: 7200
   when: ansible_system != 'Darwin'
   become: true
 
@@ -19,14 +19,19 @@
     - ansible_architecture in ["aarch64", "x86_64"]
     - ansible_facts['os_family'] == "Debian"
 
-- name: Import deploy_packages
-  ansible.builtin.include_tasks: deploy_packages.yml
-  when:
-    - ansible_facts['os_family'] == "Debian"
-
 - name: Debug computed ansible_python_interpreter
   ansible.builtin.debug:
     var: computed_python_interpreter
+
+- name: Check if pip binary exists for computed interpreter
+  ansible.builtin.stat:
+    path: "{{ computed_python_interpreter | regex_replace('python(\\d+\\.?\\d*)$', 'pip\\1') }}"
+  register: pip_executable_stat
+
+- name: Set pip_executable fact (if found)
+  ansible.builtin.set_fact:
+    pip_executable: "{{ pip_executable_stat.stat.path }}"
+  when: pip_executable_stat.stat.exists
 
 - name: Read existing host_vars file (if present)
   ansible.builtin.slurp:
@@ -41,12 +46,15 @@
   when: existing_host_vars is defined and existing_host_vars.content is defined
   delegate_to: localhost
 
-- name: Merge ansible_python_interpreter into host_vars
+- name: Merge python and pip vars into host_vars
   ansible.builtin.set_fact:
     merged_host_vars: >-
       {{
         (parsed_host_vars | default({}))
-        | combine({'ansible_python_interpreter': computed_python_interpreter})
+        | combine({
+            'ansible_python_interpreter': computed_python_interpreter,
+            'pip_executable': pip_executable
+          })
       }}
   delegate_to: localhost
 
@@ -55,3 +63,10 @@
     dest: "{{ playbook_dir }}/../host_vars/{{ inventory_hostname }}.yml"
     content: "{{ merged_host_vars | to_nice_yaml(indent=2) }}"
   delegate_to: localhost
+
+- name: Refresh inventory to pick up modified host_vars
+  meta: refresh_inventory
+
+- name: Import deploy_packages
+  ansible.builtin.include_tasks: deploy_packages.yml
+  when: ansible_facts['os_family'] == "Debian"

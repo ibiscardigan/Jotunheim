@@ -26,21 +26,12 @@
     state: present
     update_cache: yes
 
-- name: Check if psycopg2 is importable by Python 3.13
-  ansible.builtin.command: "{{ ansible_python_interpreter }} -c 'import psycopg2'"
-  register: psycopg2_check
-  failed_when: false
-  changed_when: false
+- name: Debug pip_executable
+  ansible.builtin.debug:
+    var: pip_executable
 
-- name: Get Python 3.13 site-packages path (via sysconfig)
-  ansible.builtin.command: >
-    {{ ansible_python_interpreter }} -c "from sysconfig import get_paths; print(get_paths()['purelib'])"
-  register: site_packages_path
-  when: psycopg2_check.rc != 0
-
-- name: Install psycopg2-binary into Python 3.13 site-packages
-  ansible.builtin.shell: >
-    {{ ansible_python_interpreter }} -m pip install psycopg2-binary --target={{ site_packages_path.stdout }}
-  when: psycopg2_check.rc != 0
-  args:
-    executable: /bin/bash
+- name: Install psycopg2-binary using pip module
+  ansible.builtin.pip:
+    name: psycopg2-binary
+    executable: "{{ pip_executable }}"
+    extra_args: --upgrade

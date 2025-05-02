@@ -28,3 +28,9 @@
       ansible.builtin.import_tasks: consul.yml
       when:
         - postgresql_register_consul | default(false)
+
+    - name: Include management of the DBs
+      ansible.builtin.import_tasks: manage.yml
+
+    - name: Include validate of the DBs
+      ansible.builtin.import_tasks: validate.yml
