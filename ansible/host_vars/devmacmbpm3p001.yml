@@ -5,6 +5,7 @@ pip_executable: null
 # services
 datastores:
   kafka: false
+  nfs: false
   postgres: false
   redis: false
   timescaledb: false

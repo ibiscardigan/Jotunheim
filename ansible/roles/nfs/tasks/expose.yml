@@ -1,0 +1,38 @@
+---
+- name: Ensure required NFS packages are installed
+  ansible.builtin.apt:
+    name: nfs-kernel-server
+    state: present
+    update_cache: true
+  become: true
+
+- name: Create NFS export directories
+  ansible.builtin.file:
+    path: "{{ item.value.nfs_export_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop: "{{ nfs_paths[datastores.nfs] | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  become: true
+  notify:
+    - Restart NFS
+    - Validate NFS
+
+- name: Configure /etc/exports for NFS paths
+  ansible.builtin.blockinfile:
+    path: /etc/exports
+    block: |
+      {% for path in nfs_paths[datastores.nfs].values() %}
+      {{ path.nfs_export_path }} {{ nfs_export_subnet }}(rw,sync,no_subtree_check)
+      {% endfor %}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - NFS EXPORTS"
+  become: true
+  notify:
+    - Restart NFS
+    - Validate NFS
+
+- name: Trigger NFS service reload
+  ansible.builtin.meta: flush_handlers

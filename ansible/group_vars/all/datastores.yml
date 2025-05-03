@@ -1,0 +1,12 @@
+---
+postgresql_databases:
+  home:
+    firefly_iii:
+      name: firefly_iii
+      owner: firefly_iii
+
+nfs_paths:
+  home:
+    firefly_iii:
+      nfs_export_path: "/volume1/firefly"
+      nfs_mount_path: "/mnt/firefly_storage"

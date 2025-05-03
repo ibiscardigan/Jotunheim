@@ -1,4 +1,3 @@
----
 - name: Derive postgresql_data_directory
   ansible.builtin.set_fact:
     postgresql_data_directory: "/var/lib/postgresql/{{ postgresql_version }}/main"
@@ -29,17 +28,30 @@
     daemon_reload: true
   become: true
 
-- name: Remove PostgreSQL data directory
+- name: Check if PostgreSQL data directory exists
+  ansible.builtin.stat:
+    path: "{{ postgresql_data_directory }}"
+  register: pg_data_dir
+  become: true
+
+- name: Fix permissions to allow PostgreSQL purge
   ansible.builtin.file:
     path: "{{ postgresql_data_directory }}"
-    state: absent
+    mode: '0755'
   become: true
+  when: pg_data_dir.stat.exists
 
 - name: Uninstall PostgreSQL packages
   ansible.builtin.apt:
     name: "{{ postgresql_apt_list }}"
     state: absent
     purge: yes
+  become: true
+
+- name: Remove PostgreSQL data directory
+  ansible.builtin.file:
+    path: "{{ postgresql_data_directory }}"
+    state: absent
   become: true
 
 - name: Remove PostgreSQL APT repo
@@ -61,3 +73,17 @@
     executable: "{{ pip_executable }}"
     state: absent
   become: true
+
+- name: Remove broken cluster config directory
+  ansible.builtin.file:
+    path: "/etc/postgresql/{{ postgresql_version }}/main"
+    state: absent
+  become: true
+
+- name: Remove Consul service definition for PostgreSQL
+  ansible.builtin.file:
+    path: /etc/consul.d/postgresql.json
+    state: absent
+  become: true
+  notify:
+    - Reload Consul

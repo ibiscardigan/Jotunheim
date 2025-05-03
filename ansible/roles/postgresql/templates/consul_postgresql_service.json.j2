@@ -1,6 +1,6 @@
 {
   "service": {
-    "name": "postgresql",
+    "name": "postgres-{{ datastores.postgres }}",
     "id": "postgresql-{{ ansible_hostname }}",
     "port": {{ postgresql_port }},
     "tags": ["database", "postgresql", "{{ datastores.postgres }}", "{{ nodes[0] }}"],

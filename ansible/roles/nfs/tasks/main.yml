@@ -1,0 +1,10 @@
+---
+- name: Remove if not required on host
+  ansible.builtin.import_tasks: remove.yml
+  when:
+    - not datastores.nfs
+
+- name: Include expose tasks
+  ansible.builtin.import_tasks: expose.yml
+  when:
+    - datastores.nfs is not false

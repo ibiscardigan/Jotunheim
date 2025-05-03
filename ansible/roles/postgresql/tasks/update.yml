@@ -31,7 +31,14 @@
   ansible.builtin.systemd:
     name: postgresql
     enabled: true
+    state: started
   become: true
+
+- name: Set default password for postgres user using peer auth
+  ansible.builtin.command: >
+    sudo -u postgres psql -c "ALTER USER postgres PASSWORD '{{ postgresql_passwords.default }}';"
+  when: postgresql_passwords.default is defined
+  changed_when: false
 
 - name: Flush config changes
   meta: flush_handlers

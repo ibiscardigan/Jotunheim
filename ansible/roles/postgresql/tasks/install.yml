@@ -32,9 +32,14 @@
     executable: "{{ pip_executable }}"
     extra_args: --upgrade
 
+- name: Check if PostgreSQL data directory exists
+  ansible.builtin.stat:
+    path: "/var/lib/postgresql/{{ postgresql_version }}/main"
+  register: pg_data_dir
+  become: true
+
 - name: Ensure cluster is created and started
   ansible.builtin.command: >
     pg_createcluster {{ postgresql_version }} main --start
-  args:
-    creates: "/etc/postgresql/{{ postgresql_version }}/main/postgresql.conf"
+  when: not pg_data_dir.stat.exists
   become: true

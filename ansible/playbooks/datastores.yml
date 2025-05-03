@@ -5,3 +5,7 @@
 
   roles:
     - role: postgresql
+      when: ansible_system != 'Darwin'
+
+    - role: nfs
+      when: ansible_system != 'Darwin'
