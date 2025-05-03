@@ -6,7 +6,7 @@ pip_executable: /usr/local/bin/pip3.13
 datastores:
   kafka: false
   nfs: false
-  postgres: home
+  postgres: false
   redis: false
   timescaledb: false
 games:
@@ -40,6 +40,6 @@ orchestration:
   ansible: false
   artifactory: false
   consul: true
-  docker: false
+  docker: true
   homebrew: false
   nomad: true

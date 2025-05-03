@@ -9,3 +9,6 @@
 
     - role: consul
       when: ansible_system != 'Darwin'
+
+    - role: docker
+      when: ansible_system != 'Darwin'

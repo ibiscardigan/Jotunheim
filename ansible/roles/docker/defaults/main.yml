@@ -1,0 +1,8 @@
+---
+docker: false
+docker_apt_dependencies:
+  - apt-transport-https
+  - ca-certificates
+  - curl
+  - gnupg
+  - lsb-release

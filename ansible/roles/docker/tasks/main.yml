@@ -1,0 +1,24 @@
+---
+- name: Check if Docker is installed
+  ansible.builtin.command: docker --version
+  register: docker_valid
+  changed_when: false
+  failed_when: false
+
+- name: Install
+  when:
+    - docker_valid.rc != 0
+    - orchestration.docker
+  become: true
+  block:
+    - name: Install
+      ansible.builtin.include_tasks: install.yml
+
+- name: Uninstall
+  when:
+    - docker_valid.rc == 0
+    - not orchestration.docker
+  become: true
+  block:
+    - name: Uninstall
+      ansible.builtin.include_tasks: uninstall.yml

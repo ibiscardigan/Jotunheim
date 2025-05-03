@@ -1,0 +1,64 @@
+---
+# Stop Docker service
+- name: Stop Docker service
+  ansible.builtin.service:
+    name: docker
+    state: stopped
+    enabled: False
+
+# Remove Docker packages
+- name: Uninstall Docker and dependencies
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-compose
+      - docker-compose-plugin
+    state: absent
+
+# Remove Docker SDK for Python
+- name: Uninstall Docker SDK for Python
+  ansible.builtin.pip:
+    name: docker
+    state: absent
+    executable: /usr/bin/pip3
+
+# Remove Docker GPG key
+- name: Remove Docker GPG key
+  ansible.builtin.apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: absent
+
+# Remove Docker repository
+- name: Remove Docker repository
+  ansible.builtin.apt_repository:
+    repo: "deb [arch={{ docker_arch | trim }}] https://download.docker.com/linux/ubuntu {{ ansible_facts['distribution_release'] | trim }} stable"
+    state: absent
+    filename: "docker.list"
+
+# Clean up apt cache
+- name: Clean up apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    autoclean: true
+
+# Remove user from docker group
+- name: Remove current user from the docker group
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: docker
+    append: False
+    state: present
+
+# Remove any remaining Docker directories (optional)
+- name: Remove Docker directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+    recurse: True
+  with_items:
+    - /var/lib/docker
+    - /etc/docker
+    - /run/docker
+    - /var/run/docker.sock
