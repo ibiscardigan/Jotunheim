@@ -4,16 +4,17 @@ datastores:
   postgres: false
   redis: false
   timescaledb: false
+  mosquito_mqtt: false
 
 games:
   minecraft: false
 
 home:
+  nomad: false
   firefly_iii: false
   frigate_nvr: false
   home_assistant: false
   homepage: false
-  mosquito_mqtt: false
 
 hypervisors:
   multipass: false

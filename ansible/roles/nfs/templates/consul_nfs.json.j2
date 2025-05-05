@@ -1,0 +1,20 @@
+{
+  "service": {
+    "name": "nfs-{{ datastores.nfs }}-{{ item.key | replace('_', '-') }}",
+    "tags": [
+      "nfs",
+      "{{ datastores.nfs }}"
+    ],
+    "port": {{ nfs_port | default(2049) }},
+    "checks": [
+      {
+        "name": "NFS check for nfs-{{ datastores.nfs }}-{{ item.key }}",
+        "args": [
+          "sh", "-c", "showmount -e localhost | grep {{ item.value.nfs_export_path }}"
+        ],
+        "interval": "30s",
+        "timeout": "5s"
+      }
+    ]
+  }
+}

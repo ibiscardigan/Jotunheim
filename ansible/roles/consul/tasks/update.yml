@@ -76,3 +76,37 @@
     name: "{{ consul_service }}"
     enabled: true
     state: started
+
+- name: Ensure systemd-resolved forwards .consul DNS to local Consul agent
+  become: true
+  block:
+    - name: Set DNS resolver to Consul
+      ansible.builtin.ini_file:
+        path: /etc/systemd/resolved.conf
+        section: "Resolve"
+        option: "DNS"
+        value: "127.0.0.1"
+        backup: yes
+        mode: '0644'
+
+    - name: Set DNS search domains to .consul
+      ansible.builtin.ini_file:
+        path: /etc/systemd/resolved.conf
+        section: "Resolve"
+        option: "Domains"
+        value: "~consul"
+        mode: '0644'
+
+    - name: Ensure nsswitch.conf uses DNS for host resolution
+      become: true
+      ansible.builtin.lineinfile:
+        path: /etc/nsswitch.conf
+        regexp: '^hosts:'
+        line: 'hosts: files dns'
+        backup: yes
+
+    - name: Restart systemd-resolved to apply DNS changes
+      ansible.builtin.systemd:
+        name: systemd-resolved
+        state: restarted
+        enabled: true

@@ -1,0 +1,48 @@
+---
+- name: Ensure NFS client is installed
+  ansible.builtin.apt:
+    name: nfs-common
+    state: present
+  become: true
+
+- name: Ensure Firefly NFS mount path exists
+  ansible.builtin.file:
+    path: "{{ nfs_paths['home']['firefly_iii'].nfs_mount_path }}"
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Mount Firefly NFS export via Consul DNS
+  ansible.posix.mount:
+    path: "{{ nfs_paths['home']['firefly_iii'].nfs_mount_path }}"
+    src: "nfs-home-firefly_iii.service.consul:{{ nfs_paths['home']['firefly_iii'].nfs_export_path }}"
+    fstype: nfs
+    opts: rw,sync,hard,intr
+    state: mounted
+  become: true
+
+- name: Ensure Firefly NFS mount persists across reboots
+  ansible.posix.mount:
+    path: "{{ nfs_paths['home']['firefly_iii'].nfs_mount_path }}"
+    src: "nfs-home-firefly_iii.service.consul:{{ nfs_paths['home']['firefly_iii'].nfs_export_path }}"
+    fstype: nfs
+    opts: rw,sync,hard,intr
+    state: present
+  become: true
+
+- name: Ensure Firefly job HCL is present
+  ansible.builtin.template:
+    src: firefly.nomad.j2
+    dest: "{{ nomad_job_dir }}/firefly.nomad"
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+
+- name: Register Firefly job with Nomad
+  ansible.builtin.command: >
+    nomad job run {{ nomad_job_dir }}/firefly.nomad
+  register: firefly_nomad_job
+  changed_when: "'Submitted job' in firefly_nomad_job.stdout"
+  failed_when: firefly_nomad_job.rc != 0
+  become: true

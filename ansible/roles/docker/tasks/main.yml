@@ -5,6 +5,10 @@
   changed_when: false
   failed_when: false
 
+- name: Debug arch
+  ansible.builtin.debug:
+    var: docker_arch | trim
+
 - name: Install
   when:
     - docker_valid.rc != 0

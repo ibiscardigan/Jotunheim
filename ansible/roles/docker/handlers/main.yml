@@ -1,1 +1,4 @@
 ---
+- name: Validate Docker
+  ansible.builtin.include_tasks: validate.yml
+  listen: Validate Docker

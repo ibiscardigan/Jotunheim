@@ -11,3 +11,18 @@
     fail_msg: "Expected NFS export for {{ item.key }} not found"
     success_msg: "NFS export for {{ item.key }} verified"
   loop: "{{ nfs_paths[datastores.nfs] | dict2items }}"
+
+- name: Get registered NFS services from Consul
+  ansible.builtin.uri:
+    url: "http://localhost:8500/v1/agent/services"
+    return_content: true
+  register: consul_services
+  changed_when: false
+  become: false
+
+- name: Validate expected NFS services are registered in Consul
+  ansible.builtin.assert:
+    that: "'nfs-{{ datastores.nfs }}-{{ item.key }}' in consul_services.json"
+    fail_msg: "Expected NFS Consul service 'nfs-{{ datastores.nfs }}-{{ item.key }}' not found"
+    success_msg: "NFS Consul service 'nfs-{{ datastores.nfs }}-{{ item.key }}' is registered"
+  loop: "{{ nfs_paths[datastores.nfs] | dict2items }}"

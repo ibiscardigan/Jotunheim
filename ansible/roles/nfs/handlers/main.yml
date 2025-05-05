@@ -9,3 +9,9 @@
 - name: Validate NFS
   ansible.builtin.include_tasks: validate.yml
   listen: Validate NFS
+
+- name: Reload Consul
+  ansible.builtin.service:
+    name: consul
+    state: reloaded
+  become: true

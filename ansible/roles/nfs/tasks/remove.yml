@@ -22,14 +22,6 @@
   become: true
   when: mnt_stat.stat.exists and mnt_stat.stat.isdir
 
-- name: Delete NFS mount directories
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: absent
-  loop: "{{ nfs_mount_dirs.files }}"
-  become: true
-  when: item.path is match('^/mnt/')
-
 - name: Check if /etc/exports exists
   ansible.builtin.stat:
     path: /etc/exports

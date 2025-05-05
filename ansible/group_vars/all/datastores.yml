@@ -8,5 +8,5 @@ postgresql_databases:
 nfs_paths:
   home:
     firefly_iii:
-      nfs_export_path: "/volume1/firefly"
-      nfs_mount_path: "/mnt/firefly_storage"
+      nfs_export_path: "/volume1/firefly_iii"
+      nfs_mount_path: "/mnt/firefly_iii_storage"

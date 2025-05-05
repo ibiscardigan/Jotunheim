@@ -1,0 +1,8 @@
+---
+- name: Provision the service components on hosts
+  hosts: "{{ target_hosts | default(nodes | default(['dev'])) }}"
+  gather_facts: false
+
+  roles:
+    - role: firefly_iii
+      when: ansible_system != 'Darwin'

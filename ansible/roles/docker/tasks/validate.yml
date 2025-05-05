@@ -1,0 +1,24 @@
+---
+- name: Check if Docker service is running
+  ansible.builtin.service_facts:
+
+- name: Assert Docker service is active
+  ansible.builtin.assert:
+    that:
+      - "'docker.service' in ansible_facts.services"
+      - ansible_facts.services['docker.service'].state == 'running'
+    fail_msg: "Docker service is not running"
+    success_msg: "Docker service is running"
+
+- name: Validate Docker CLI works
+  ansible.builtin.command: >
+    docker version --format '{{ '{{' }}.Server.Version{{ '}}' }}'
+  register: docker_version_output
+  changed_when: false
+
+- name: Assert Docker version output is non-empty
+  ansible.builtin.assert:
+    that:
+      - docker_version_output.stdout | length > 0
+    fail_msg: "Docker CLI is not returning expected output"
+    success_msg: "Docker CLI responded with version: {{ docker_version_output.stdout }}"

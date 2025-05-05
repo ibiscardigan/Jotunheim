@@ -34,5 +34,19 @@
     - Restart NFS
     - Validate NFS
 
+- name: Register each NFS service in Consul
+  ansible.builtin.template:
+    src: consul_nfs.json.j2
+    dest: "/etc/consul.d/nfs_{{ item.key }}.json"
+    owner: root
+    group: root
+    mode: '0644'
+  loop: "{{ nfs_paths[datastores.nfs] | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  notify:
+    - Reload Consul
+  become: true
+
 - name: Trigger NFS service reload
   ansible.builtin.meta: flush_handlers

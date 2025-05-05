@@ -1,0 +1,16 @@
+---
+- name: Install & Update Firefly III via Nomad
+  when:
+    - home.nomad
+  become: true
+  block:
+    - name: Deploy Firefly III job to Nomad
+      ansible.builtin.include_tasks: install.yml
+
+- name: Uninstall Firefly III via Nomad
+  when:
+    - not home.nomad
+  become: true
+  block:
+    - name: Remove Firefly III Nomad job
+      ansible.builtin.include_tasks: uninstall.yml

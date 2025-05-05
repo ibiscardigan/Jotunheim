@@ -3,5 +3,6 @@
   ansible.builtin.pip:
     name:
       - packaging
+      - dnspython
     executable: "{{ pip_executable }}"
   become: true

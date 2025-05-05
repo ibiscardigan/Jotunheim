@@ -52,13 +52,23 @@
     state: present
 
 # Remove any remaining Docker directories (optional)
-- name: Remove Docker directories
-  ansible.builtin.file:
+- name: Gather facts about Docker-related paths
+  ansible.builtin.stat:
     path: "{{ item }}"
-    state: absent
-    recurse: True
-  with_items:
+  loop:
     - /var/lib/docker
     - /etc/docker
     - /run/docker
     - /var/run/docker.sock
+  register: docker_paths
+
+- name: Remove Docker files and directories
+  ansible.builtin.file:
+    path: "{{ item.item }}"
+    state: absent
+    force: true
+  when: item.stat.exists
+  loop: "{{ docker_paths.results }}"
+  loop_control:
+    label: "{{ item.item }}"
+  become: true

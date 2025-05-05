@@ -1,5 +1,5 @@
 ---
-docker: false
+docker_arch: "{{ arch_map[ansible_facts['architecture']] | default(ansible_facts['architecture']) }}"
 docker_apt_dependencies:
   - apt-transport-https
   - ca-certificates

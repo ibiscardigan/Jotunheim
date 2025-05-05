@@ -20,17 +20,6 @@
     dest: /etc/apt/keyrings/docker.asc
     mode: '0644'
 
-- name: Set Docker architecture
-  ansible.builtin.set_fact:
-    docker_arch: >
-      {{ (ansible_facts['architecture'] == 'x86_64') | ternary('amd64',
-        (ansible_facts['architecture'] == 'aarch64') | ternary('arm64',
-        (ansible_facts['architecture'] == 'armv7l') | ternary('armhf', 'amd64'))) | trim }}
-
-- name: Debug arch
-  ansible.builtin.debug:
-    var: docker_arch | trim
-
 - name: Add Docker repository to apt sources list
   ansible.builtin.shell: |
     set -o pipefail
@@ -60,6 +49,7 @@
     name: docker
     state: started
     enabled: yes
+  notify: Validate Docker
 
 - name: Add current user to the docker group
   ansible.builtin.user:
