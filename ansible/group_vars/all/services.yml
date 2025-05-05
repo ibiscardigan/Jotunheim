@@ -1,3 +1,6 @@
+ai:
+  llama_cpp: false
+
 datastores:
   kafka: false
   nfs: false

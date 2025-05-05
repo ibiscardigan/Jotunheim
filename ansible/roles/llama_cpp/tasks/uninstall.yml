@@ -1,0 +1,22 @@
+---
+- name: Remove symlink to llama.cpp binary
+  ansible.builtin.file:
+    path: "{{ llama_cpp_build_dir }}/llama.cpp/main"
+    state: absent
+
+- name: Remove llama.cpp source directory
+  ansible.builtin.file:
+    path: "{{ llama_cpp_build_dir }}/llama.cpp"
+    state: absent
+
+- name: Optionally remove build root if empty
+  ansible.builtin.file:
+    path: "{{ llama_cpp_build_dir }}"
+    state: absent
+  when: llama_cpp_remove_root | default(false)
+
+- name: Uninstall base packages (optional)
+  community.general.homebrew:
+    name: "{{ llama_cpp_base_packages }}"
+    state: absent
+  when: llama_cpp_remove_packages | default(false)

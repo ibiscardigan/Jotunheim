@@ -1,0 +1,19 @@
+---
+- name: Check if llama.cpp is already built
+  ansible.builtin.stat:
+    path: "{{ llama_cpp_build_dir }}/llama.cpp/main"
+  register: llama_cpp_binary
+
+- name: Execute tasks if llama_cpp is true
+  when: ai.llama_cpp
+  block:
+    - name: Include install tasks only if llama.cpp is not built
+      ansible.builtin.include_tasks: install.yml
+      when: not llama_cpp_binary.stat.exists
+
+    - name: Include manage_models
+      ansible.builtin.include_tasks: manage_models.yml
+
+- name: Include uninstall tasks if llama.cpp is built
+  ansible.builtin.include_tasks: uninstall.yml
+  when: not ai.llama_cpp

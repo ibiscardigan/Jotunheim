@@ -3,6 +3,8 @@ ansible_python_interpreter: /opt/homebrew/opt/python@3.13/bin/python3
 pip_executable: null
 
 # services
+ai:
+  llama_cpp: true
 datastores:
   kafka: false
   mosquito_mqtt: false

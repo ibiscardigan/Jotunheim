@@ -1,0 +1,38 @@
+---
+- name: Ensure model directory exists
+  ansible.builtin.file:
+    path: "{{ llama_cpp_model_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Collect current model files on host
+  ansible.builtin.find:
+    paths: "{{ llama_cpp_model_dir }}"
+    patterns: "*.gguf"
+  register: found_models
+
+- name: Set list of expected model filenames
+  ansible.builtin.set_fact:
+    expected_model_files: "{{ llama_cpp_models | map(attribute='filename') | list }}"
+
+- name: Download expected models
+  ansible.builtin.get_url:
+    url: "{{ item.url }}"
+    dest: "{{ llama_cpp_model_dir }}/{{ item.filename }}"
+    headers:
+      Authorization: "Bearer {{ huggingface_token }}"
+    mode: '0644'
+  loop: "{{ llama_cpp_models }}"
+  loop_control:
+    label: "{{ item.filename }}"
+  register: model_downloads
+  changed_when: model_downloads is changed
+
+- name: Delete any models not in the expected list
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ found_models.files }}"
+  when: item.path | basename not in expected_model_files
+  loop_control:
+    label: "{{ item.path }}"

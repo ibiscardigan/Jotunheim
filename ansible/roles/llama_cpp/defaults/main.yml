@@ -1,0 +1,15 @@
+---
+llama_cpp_base_packages:
+  - make
+  - cmake
+  - wget
+
+llama_cpp_build_dir: "{{ ansible_user_dir }}/.local/src"
+llama_cpp_remove_root: false                  # To also remove ~/.local/src
+llama_cpp_remove_packages: false
+llama_cpp_model_dir: "{{ ansible_user_dir }}/.local/models"
+
+llama_cpp_models:
+  - name: codellama-13b-instruct
+    url: https://huggingface.co/TheBloke/CodeLlama-13B-Instruct-GGUF/resolve/main/codellama-13b-instruct.Q4_K_M.gguf
+    filename: codellama-13b-instruct.Q4_K_M.gguf

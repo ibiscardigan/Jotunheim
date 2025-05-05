@@ -1,0 +1,10 @@
+---
+- name: Run localhost agentic playbook
+  hosts: "{{ nodes | default(['dev']) }}"
+  gather_facts: true
+  environment:
+    PATH: "/opt/homebrew/bin:/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
+
+  roles:
+    - role: llama_cpp
+      when: ansible_system == 'Darwin'

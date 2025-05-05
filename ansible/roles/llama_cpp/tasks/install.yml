@@ -1,0 +1,71 @@
+---
+- name: Install base packages
+  community.general.homebrew:
+    name: "{{ llama_cpp_base_packages }}"
+    state: present
+
+- name: Create directory for source
+  ansible.builtin.file:
+    path: "{{ llama_cpp_build_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Clone llama.cpp repository
+  ansible.builtin.git:
+    repo: https://github.com/ggerganov/llama.cpp.git
+    dest: "{{ llama_cpp_build_dir }}/llama.cpp"
+    version: master
+    update: yes
+
+- name: Create build directory
+  ansible.builtin.file:
+    path: "{{ llama_cpp_build_dir }}/llama.cpp/build"
+    state: directory
+    mode: '0755'
+
+- name: Configure llama.cpp with CMake (Metal + Timings + Benchmark)
+  ansible.builtin.command: >
+    cmake -S . -B build
+    -DLLAMA_METAL=on
+    -DLLAMA_PRINT_TIMINGS=on
+    -DLLAMA_BUILD_BENCHMARK=on
+  args:
+    chdir: "{{ llama_cpp_build_dir }}/llama.cpp"
+  environment:
+    PATH: "/opt/homebrew/bin:/usr/local/bin:/usr/bin:{{ ansible_env.PATH }}"
+    CMAKE_OSX_ARCHITECTURES: "{{ ansible_architecture }}"
+
+- name: Build llama.cpp with CMake
+  ansible.builtin.command: >
+    cmake --build build --config Release
+  args:
+    chdir: "{{ llama_cpp_build_dir }}/llama.cpp"
+
+- name: Find llama.cpp built binary
+  ansible.builtin.find:
+    paths: "{{ llama_cpp_build_dir }}/llama.cpp/build/bin"
+    patterns: "llama-run"
+  register: llama_binaries
+
+- name: Symlink llama-run binary to top-level llama.cpp dir
+  ansible.builtin.file:
+    src: "{{ llama_binaries.files[0].path }}"
+    dest: "{{ llama_cpp_build_dir }}/llama.cpp/main"
+    state: link
+    force: true
+  when: llama_binaries.matched > 0
+
+- name: Run llama.cpp to verify installation
+  ansible.builtin.command: ./main --help dummy-model
+  args:
+    chdir: "{{ llama_cpp_build_dir }}/llama.cpp"
+  when: llama_binaries.matched > 0
+  register: llama_check
+  changed_when: false
+  failed_when: false
+
+- name: Ensure llama-run help output was shown
+  ansible.builtin.assert:
+    that: "'Usage:' in llama_check.stdout"
+    fail_msg: "llama-run did not produce expected usage output"
+  when: llama_check is defined and llama_check.stdout is defined
