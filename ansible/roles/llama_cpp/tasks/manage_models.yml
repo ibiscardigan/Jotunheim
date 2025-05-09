@@ -1,4 +1,16 @@
 ---
+- name: Install llama-cpp-python into multiple virtual environments
+  ansible.builtin.pip:
+    name: llama-cpp-python
+    extra_args: "--upgrade --force-reinstall --no-cache-dir"
+    executable: "{{ item }}/bin/pip"
+  environment:
+    CMAKE_ARGS: "-DLLAMA_METAL=on"
+    FORCE_CMAKE: "1"
+  loop: "{{ llama_cpp_venvs }}"
+  loop_control:
+    label: "{{ item }}"
+
 - name: Ensure model directory exists
   ansible.builtin.file:
     path: "{{ llama_cpp_model_dir }}"

@@ -47,3 +47,6 @@ orchestration:
   docker: false
   homebrew: true
   nomad: true
+
+llama_cpp_venvs:
+  - /Users/hamson/stackmind/.venv

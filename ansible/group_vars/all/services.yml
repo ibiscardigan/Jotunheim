@@ -13,7 +13,6 @@ games:
   minecraft: false
 
 home:
-  nomad: false
   firefly_iii: false
   frigate_nvr: false
   home_assistant: false

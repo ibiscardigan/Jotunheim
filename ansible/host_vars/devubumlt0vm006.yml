@@ -1,8 +1,4 @@
-# base_host_attributes
-ansible_python_interpreter: /usr/local/bin/python3.13
-pip_executable: /usr/local/bin/pip3.13
-
-# services
+ansible_python_interpreter: /usr/bin/python3
 datastores:
   kafka: false
   mosquito_mqtt: false
@@ -45,3 +41,4 @@ orchestration:
   docker: false
   homebrew: false
   nomad: true
+pip_executable: /usr/bin/pip3
