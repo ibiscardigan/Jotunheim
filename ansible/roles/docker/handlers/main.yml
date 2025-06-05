@@ -2,3 +2,9 @@
 - name: Validate Docker
   ansible.builtin.include_tasks: validate.yml
   listen: Validate Docker
+
+- name: Restart Docker
+  become: true
+  ansible.builtin.service:
+    name: docker
+    state: restarted

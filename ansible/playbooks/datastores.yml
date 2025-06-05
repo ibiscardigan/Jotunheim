@@ -4,8 +4,5 @@
   gather_facts: yes
 
   roles:
-    - role: postgresql
-      when: ansible_system != 'Darwin'
-
-    - role: nfs
+    - role: postgres
       when: ansible_system != 'Darwin'

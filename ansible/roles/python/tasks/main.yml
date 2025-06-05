@@ -3,15 +3,18 @@
   ansible.builtin.debug:
     var: ansible_python_interpreter
 
-- name: Set fact for interpreter version (from Ansible facts)
-  ansible.builtin.set_fact:
-    python_interpreter_version: >-
-      {{ ansible_facts.python.version.major }}.{{ ansible_facts.python.version.minor }}.{{ ansible_facts.python.version.micro }}
-
-- name: Debug python3 version
+- name: Show system
   ansible.builtin.debug:
-    var: python_interpreter_version
+    var: ansible_system
 
-- name: Include install task if version is too low
-  ansible.builtin.include_tasks: install.yml
-  when: python_interpreter_version is version(python_minimum_version, '<')
+- name: Linux block
+  when:
+    - ansible_system != 'Darwin'
+  block:
+    - name: Ensure pip is installed
+      ansible.builtin.apt:
+        name:
+          - python3-pip
+        state: present
+        update_cache: yes
+      become: true

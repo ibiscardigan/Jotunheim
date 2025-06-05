@@ -1,0 +1,17 @@
+{
+  "insecure-registries": [
+    {% for reg in docker_insecure_registries | unique %}
+    "{{ reg }}"{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ],
+  "dns": [
+    {% for d in docker_dns | unique %}
+    "{{ d }}"{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ],
+  "dns-search": [
+    {% for s in docker_dns_search | unique %}
+    "{{ s }}"{% if not loop.last %},{% endif %}
+    {% endfor %}
+  ]
+}

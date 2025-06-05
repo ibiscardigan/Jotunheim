@@ -1,0 +1,7 @@
+---
+kafka: true
+nfs: false
+postgres: true
+redis: true
+timescaledb: true
+mosquito_mqtt: true

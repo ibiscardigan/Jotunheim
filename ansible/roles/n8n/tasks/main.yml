@@ -1,0 +1,14 @@
+---
+- name: Install & Update n8n via Nomad
+  when: ai.n8n | default(false) | bool
+  become: true
+  block:
+    - name: Include n8n nomad install tasks
+      ansible.builtin.include_tasks: install.yml
+
+- name: Uninstall n8n via Nomad
+  when: not (ai.n8n | default(false) | bool)
+  become: true
+  block:
+    - name: Include n8n nomad uninstall tasks
+      ansible.builtin.include_tasks: uninstall.yml

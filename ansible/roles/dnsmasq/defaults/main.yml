@@ -1,0 +1,4 @@
+---
+dnsmasq_consul_domain: "consul"
+dnsmasq_consul_target: "127.0.0.1#8600"
+dnsmasq_listen_address: "127.0.0.1"

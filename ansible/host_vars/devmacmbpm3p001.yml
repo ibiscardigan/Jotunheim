@@ -1,3 +1,4 @@
+---
 # base_host_attributes
 ansible_python_interpreter: /opt/homebrew/opt/python@3.13/bin/python3
 pip_executable: null
@@ -5,6 +6,7 @@ pip_executable: null
 # services
 ai:
   llama_cpp: true
+  n8n: false
 datastores:
   kafka: false
   mosquito_mqtt: false
@@ -19,8 +21,6 @@ home:
   frigate_nvr: false
   home_assistant: false
   homepage: false
-  mosquito_mqtt: false
-  nomad: false
 hypervisors:
   multipass: true
   proxmox: false
@@ -47,6 +47,3 @@ orchestration:
   docker: false
   homebrew: true
   nomad: true
-
-llama_cpp_venvs:
-  - /Users/hamson/stackmind/.venv

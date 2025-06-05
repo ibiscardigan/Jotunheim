@@ -1,0 +1,5 @@
+---
+docker_registry_data_dir: "/opt/registry/data"
+docker_registry_config_dir: "/opt/registry/config/"
+docker_registry_proxy_url: "https://registry-1.docker.io"
+docker_registry_job_name: "docker-registry"

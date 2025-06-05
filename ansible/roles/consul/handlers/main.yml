@@ -15,10 +15,17 @@
 
 - name: Validate Consul
   ansible.builtin.include_tasks: validate_server.yml
-  when: orchestration.consul == "server"
+  when: consul_server | default(false)
   listen: Validate Consul
 
 - name: Validate Consul (client)
   ansible.builtin.include_tasks: validate_client.yml
-  when: orchestration.consul == true
+  when: not consul_server | default(true)
   listen: Validate Consul
+
+- name: Restart systemd-resolved
+  become: true
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: restarted
+    enabled: true

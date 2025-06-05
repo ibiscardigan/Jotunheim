@@ -1,0 +1,56 @@
+job "{{ n8n_nomad_job_name }}" {
+  datacenters = ["{{ meta_datacenter }}"]
+  type        = "service"
+
+  group "{{ n8n_nomad_group_name }}" {
+    count = {{ n8n_nomad_group_count }}
+
+    network {
+      port "http" {
+        to = {{ n8n_http_port }}
+      }
+    }
+
+    task "{{ n8n_nomad_job_name }}" {
+      driver = "docker"
+
+      config {
+        image = "{{ n8n_image }}"
+        ports = ["http"]
+        volumes = [
+          "{{ n8n_nomad_volume.host_path }}:/home/node/.n8n"
+        ]
+      }
+
+      env {
+        {% for key, value in n8n_env.items() %}
+        {{ key }} = "{{ value }}"
+        {% endfor %}
+      }
+
+      resources {
+        cpu    = {{ n8n_nomad_resources.cpu }}
+        memory = {{ n8n_nomad_resources.memory }}
+      }
+
+      restart {
+        attempts = 3
+        interval = "30s"
+        delay    = "15s"
+        mode     = "delay"
+      }
+
+      service {
+        name = "{{ n8n_consul.service_name }}"
+        port = "http"
+
+        check {
+          type     = "{{ n8n_consul.check.type }}"
+          path     = "{{ n8n_consul.check.path }}"
+          interval = "{{ n8n_consul.check.interval }}"
+          timeout  = "{{ n8n_consul.check.timeout }}"
+        }
+      }
+    }
+  }
+}

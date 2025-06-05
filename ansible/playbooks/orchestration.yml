@@ -10,5 +10,11 @@
     - role: consul
       when: ansible_system != 'Darwin'
 
+    - role: dnsmasq
+      when: ansible_system != 'Darwin'
+
     - role: docker
+      when: ansible_system != 'Darwin'
+
+    - role: docker_registry
       when: ansible_system != 'Darwin'

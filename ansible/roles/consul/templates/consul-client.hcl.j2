@@ -11,3 +11,12 @@ ui = false
 server = false
 retry_join = {{ consul_server_peers | to_json }}
 enable_local_script_checks = true
+
+ports {
+  dns = {{ consul_dns_port }}
+}
+
+dns_config {
+  enable_truncate   = true
+  only_passing      = true
+}

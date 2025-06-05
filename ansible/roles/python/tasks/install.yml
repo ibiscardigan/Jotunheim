@@ -33,40 +33,50 @@
     pip_executable: "{{ pip_executable_stat.stat.path }}"
   when: pip_executable_stat.stat.exists
 
-- name: Read existing host_vars file (if present)
-  ansible.builtin.slurp:
-    src: "{{ playbook_dir }}/../host_vars/{{ inventory_hostname }}.yml"
-  register: existing_host_vars
-  ignore_errors: true
-  delegate_to: localhost
-
-- name: Decode and parse existing YAML (if any)
+- name: Load existing host_vars for {{ inventory_hostname }}
   ansible.builtin.set_fact:
-    parsed_host_vars: "{{ existing_host_vars.content | b64decode | from_yaml }}"
-  when: existing_host_vars is defined and existing_host_vars.content is defined
-  delegate_to: localhost
-
-- name: Merge python and pip vars into host_vars
-  ansible.builtin.set_fact:
-    merged_host_vars: >-
+    existing_host_vars_raw: >-
       {{
-        (parsed_host_vars | default({}))
-        | combine({
-            'ansible_python_interpreter': computed_python_interpreter,
-            'pip_executable': pip_executable
-          })
+        lookup(
+          'file',
+          playbook_dir ~ '/../host_vars/' ~ inventory_hostname ~ '.yml',
+          errors='ignore'
+        )
+        | default('', true)
       }}
   delegate_to: localhost
 
-- name: Write merged host_vars to file
-  ansible.builtin.copy:
-    dest: "{{ playbook_dir }}/../host_vars/{{ inventory_hostname }}.yml"
-    content: "{{ merged_host_vars | to_nice_yaml(indent=2) }}"
+- name: Parse raw YAML into dict
+  ansible.builtin.set_fact:
+    existing_host_vars: >-
+      {{
+        existing_host_vars_raw
+        | from_yaml
+        | default({}, true)
+      }}
   delegate_to: localhost
 
-- name: Refresh inventory to pick up modified host_vars
-  meta: refresh_inventory
+- name: Merge interpreter + pip into that dict
+  ansible.builtin.set_fact:
+    updated_host_vars: >-
+      {{
+        existing_host_vars
+        | combine({
+            'ansible_python_interpreter': computed_python_interpreter,
+            'pip_executable': pip_executable
+          }, recursive=True)
+      }}
+  delegate_to: localhost
 
-- name: Import deploy_packages
-  ansible.builtin.include_tasks: deploy_packages.yml
-  when: ansible_facts['os_family'] == "Debian"
+- name: Write back updated host_vars for {{ inventory_hostname }}
+  ansible.builtin.copy:
+    dest: "{{ playbook_dir }}/../host_vars/{{ inventory_hostname }}.yml"
+    content: >-
+      {{ updated_host_vars
+         | to_nice_yaml(indent=2)
+         | regex_replace('^---\n','') }}
+    mode: '0644'
+  delegate_to: localhost
+
+- name: Refresh inventory to pick up new host_vars
+  meta: refresh_inventory

@@ -1,8 +1,4 @@
 ---
-- name: Debug orchestration.consul var
-  ansible.builtin.debug:
-    var: orchestration.consul
-
 - name: Check for existing Consul binary
   ansible.builtin.stat:
     path: "{{ consul_bin_dir }}/consul"
@@ -36,11 +32,11 @@
 - name: Uninstall Consul if disabled
   ansible.builtin.include_tasks: uninstall.yml
   when:
-    - orchestration.consul == false
+    - not consul
     - consul_bin.stat.exists
 
 - name: Install, update, and validate Consul when enabled
-  when: orchestration.consul is not false | default(false)
+  when: consul | default(false)
   become: true
   block:
     - name: Include install tasks

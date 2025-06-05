@@ -6,3 +6,14 @@ docker_apt_dependencies:
   - curl
   - gnupg
   - lsb-release
+
+docker_insecure_registries:
+  - docker-registry.service.consul:5050
+
+docker_dns:
+  - 127.0.0.1
+  - 1.1.1.1
+  - 8.8.8.8
+
+docker_dns_search:
+  - service.consul

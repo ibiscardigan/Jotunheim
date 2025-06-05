@@ -27,8 +27,7 @@
             | map('extract', groups)
             | flatten
             | unique -%}
-        {% if hostvars[host].orchestration.consul is defined
-              and hostvars[host].orchestration.consul == 'server' -%}
+        {% if hostvars[host].get('consul_server', False) -%}
           {% set _ = peers.append(hostvars[host].ansible_host) -%}
         {% endif -%}
       {% endfor -%}
@@ -45,7 +44,7 @@
     owner: "{{ consul_user }}"
     group: "{{ consul_group }}"
     mode: "0644"
-  when: orchestration.consul == "server"
+  when: consul_server | default(false)
   notify:
     - Restart Consul
     - Validate Consul
@@ -57,7 +56,7 @@
     owner: "{{ consul_user }}"
     group: "{{ consul_group }}"
     mode: "0644"
-  when: orchestration.consul == true
+  when: not consul_server | default(true)
   notify:
     - Restart Consul
     - Validate Consul
@@ -73,6 +72,13 @@
 
 - name: Ensure Consul service is enabled and running
   ansible.builtin.systemd:
+    name: "{{ consul_service }}.service"
+    enabled: true
+    state: started
+    daemon_reload: yes
+
+- name: Ensure Consul service is enabled and running
+  ansible.builtin.systemd:
     name: "{{ consul_service }}"
     enabled: true
     state: started
@@ -80,22 +86,23 @@
 - name: Ensure systemd-resolved forwards .consul DNS to local Consul agent
   become: true
   block:
-    - name: Set DNS resolver to Consul
-      ansible.builtin.ini_file:
-        path: /etc/systemd/resolved.conf
-        section: "Resolve"
-        option: "DNS"
-        value: "127.0.0.1"
-        backup: yes
-        mode: '0644'
+    - name: Ensure systemd-resolved drop-in config directory exists
+      become: true
+      ansible.builtin.file:
+        path: /etc/systemd/resolved.conf.d
+        state: directory
+        mode: "0755"
 
-    - name: Set DNS search domains to .consul
-      ansible.builtin.ini_file:
-        path: /etc/systemd/resolved.conf
-        section: "Resolve"
-        option: "Domains"
-        value: "~consul"
-        mode: '0644'
+    - name: Configure Consul DNS forwarding via systemd-resolved drop-in
+      become: true
+      ansible.builtin.copy:
+        dest: /etc/systemd/resolved.conf.d/consul.conf
+        mode: "0644"
+        content: |
+          [Resolve]
+          DNS=127.0.0.1:{{ consul_dns_port }}
+          Domains=~consul
+      notify: Restart systemd-resolved
 
     - name: Ensure nsswitch.conf uses DNS for host resolution
       become: true
@@ -110,3 +117,4 @@
         name: systemd-resolved
         state: restarted
         enabled: true
+      changed_when: false

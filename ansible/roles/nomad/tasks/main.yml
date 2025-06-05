@@ -1,8 +1,4 @@
 ---
-- name: Debug orchestration.nomad var
-  ansible.builtin.debug:
-    var: orchestration.nomad
-
 - name: Check for existing Nomad binary
   ansible.builtin.stat:
     path: "{{ nomad_bin_dir }}/nomad"
@@ -36,11 +32,11 @@
 - name: Uninstall Nomad if disabled
   ansible.builtin.include_tasks: uninstall.yml
   when:
-    - orchestration.nomad == false
+    - not nomad
     - nomad_bin.stat.exists
 
 - name: Install, update, and validate Nomad when enabled
-  when: orchestration.nomad is not false | default(false)
+  when: nomad | default(false)
   become: true
   block:
     - name: Include install tasks

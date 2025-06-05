@@ -1,0 +1,28 @@
+---
+- name: “Build merged cluster definitions”
+  ansible.builtin.set_fact:
+    postgres_clusters_merged: >-
+      {{ (postgres_clusters_merged | default([]))
+         + [postgres_cluster_defaults
+            | combine(item, recursive=True)] }}
+  loop: "{{ postgres_clusters }}"
+  loop_control:
+    loop_var: item
+
+- name: Cleanup mounts
+  ansible.builtin.import_tasks: cleanup.yml
+
+- name: Install postgres requirements
+  ansible.builtin.include_tasks: install.yml
+  when:
+    - meta_class == 'data'
+    - (postgres_clusters | default([])) | length > 0
+
+- name: Build container
+  ansible.builtin.include_tasks: build.yml
+  when:
+    - postgres_build_image | default(false)
+    - meta_class == 'data'
+
+- name: Import Nomad tasks
+  ansible.builtin.import_tasks: nomad.yml

@@ -1,0 +1,46 @@
+---
+# Nomad job definition
+n8n_nomad_job_name: "n8n"
+n8n_nomad_type: "service"
+n8n_nomad_group_name: "n8n"
+n8n_nomad_group_count: 1
+
+# Docker image to run
+n8n_image: "n8nio/n8n:latest"
+
+# Nomad resource constraints
+n8n_nomad_resources:
+  cpu: 500    # MHz
+  memory: 512    # MB
+
+# Networking / ports
+n8n_http_port: 5678
+
+# Host volume for workflow/data persistence
+n8n_nomad_volume:
+  host_source: "n8n-data"                # Nomad volume name
+  host_path: "/opt/nomad/data/n8n"     # directory on each client
+
+# n8n environment variables (will be passed into the container)
+# Override any secrets (passwords) via vaulted/group_vars or --extra-vars
+n8n_env:
+  DB_TYPE: "postgres"
+  DB_POSTGRES_HOST: "postgres-ai.service.consul"
+  DB_POSTGRES_PORT: 5432
+  DB_POSTGRES_DATABASE: "{{ postgresql_databases.ai.n8n.name }}"
+  DB_POSTGRES_USER: "{{ postgresql_databases.ai.n8n.owner }}"
+  DB_POSTGRES_PASSWORD: "{{ postgresql_passwords.n8n }}"
+  GENERIC_TIMEZONE: "Australia/Sydney"
+  N8N_BASIC_AUTH_ACTIVE: "true"
+  N8N_BASIC_AUTH_USER: "{{ postgresql_databases.ai.n8n.owner }}"
+  N8N_BASIC_AUTH_PASSWORD: "{{ postgresql_passwords.n8n }}"
+
+# Consul service registration parameters
+n8n_consul:
+  service_name: "n8n"
+  port_label: "http"
+  check:
+    type: "http"
+    path: "/healthz"
+    interval: "10s"
+    timeout: "2s"

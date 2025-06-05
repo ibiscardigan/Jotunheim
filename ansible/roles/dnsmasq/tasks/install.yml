@@ -1,0 +1,48 @@
+---
+- name: Install dnsmasq
+  ansible.builtin.apt:
+    name: dnsmasq
+    state: present
+  become: true
+
+- name: Ensure dnsmasq config directory exists
+  ansible.builtin.file:
+    path: /etc/dnsmasq.d
+    state: directory
+    mode: "0755"
+  become: true
+
+- name: Configure dnsmasq to forward .consul to local Consul agent
+  ansible.builtin.template:
+    src: consul.conf.j2
+    dest: /etc/dnsmasq.d/consul.conf
+    mode: "0644"
+  notify: Restart dnsmasq
+  become: true
+
+- name: Ensure dnsmasq is enabled and started
+  ansible.builtin.systemd:
+    name: dnsmasq
+    enabled: true
+    state: started
+  become: true
+
+- name: Disable systemd-resolved
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: stopped
+    enabled: false
+
+- name: Remove systemd-resolved symlink
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    state: absent
+
+- name: Set resolv.conf to use dnsmasq
+  ansible.builtin.copy:
+    dest: /etc/resolv.conf
+    content: "nameserver 127.0.0.1\n"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart dnsmasq

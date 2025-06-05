@@ -1,0 +1,4 @@
+---
+nomad_mounts:
+  - source: "/etc/patroni/postgres-ai-n8n.yml"
+    target: "/etc/patroni/postgres-ai-n8n.yml"

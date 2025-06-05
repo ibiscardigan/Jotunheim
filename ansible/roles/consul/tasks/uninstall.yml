@@ -1,0 +1,44 @@
+---
+- name: Stop and disable Consul service
+  ansible.builtin.systemd:
+    name: consul
+    state: stopped
+    enabled: false
+  become: true
+
+- name: Remove Consul systemd unit file
+  ansible.builtin.file:
+    path: /etc/systemd/system/consul.service
+    state: absent
+  become: true
+
+- name: Reload systemd to pick up removal
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  become: true
+
+- name: Remove Consul binary
+  ansible.builtin.file:
+    path: "{{ consul_bin_dir }}/consul"
+    state: absent
+  when: consul_bin_dir is defined
+  become: true
+
+- name: Remove temporary Consul archive
+  ansible.builtin.file:
+    path: "/tmp/consul_{{ consul_version }}.zip"
+    state: absent
+  become: true
+
+- name: Remove consul user
+  ansible.builtin.user:
+    name: consul
+    state: absent
+    remove: yes     # remove home and mail spool if any
+  become: true
+
+- name: Remove consul group
+  ansible.builtin.group:
+    name: consul
+    state: absent
+  become: true

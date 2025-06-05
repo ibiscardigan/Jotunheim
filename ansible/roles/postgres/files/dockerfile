@@ -1,0 +1,22 @@
+# Start with Timescale PG17 base
+FROM docker-registry.service.consul:5050/timescale/timescaledb:2.14.2-pg15
+
+# Install deps + Patroni in venv + psycopg2-binary
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/v3.18/main" > /etc/apk/repositories \
+ && echo "https://dl-cdn.alpinelinux.org/alpine/v3.18/community" >> /etc/apk/repositories \
+ && apk update \
+ && apk add --no-cache --virtual .build-deps \
+      python3-dev gcc musl-dev linux-headers \
+ && apk add --no-cache \
+      curl python3 py3-pip py3-setuptools py3-wheel \
+      bash postgresql-client \
+ && python3 -m venv /opt/patroni-venv \
+ && /opt/patroni-venv/bin/pip install --no-cache-dir \
+      'patroni[etcd]' psycopg2-binary \
+ && apk del .build-deps
+
+# Create config dir (empty)
+RUN mkdir -p /etc/patroni
+
+# Use patroni binary as entrypoint
+ENTRYPOINT ["/opt/patroni-venv/bin/patroni"]

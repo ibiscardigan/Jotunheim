@@ -1,7 +1,7 @@
 ---
 - name: Install & Update Firefly III via Nomad
   when:
-    - home.nomad
+    - home.firefly_iii
   become: true
   block:
     - name: Deploy Firefly III job to Nomad
@@ -9,7 +9,7 @@
 
 - name: Uninstall Firefly III via Nomad
   when:
-    - not home.nomad
+    - not home.firefly_iii
   become: true
   block:
     - name: Remove Firefly III Nomad job

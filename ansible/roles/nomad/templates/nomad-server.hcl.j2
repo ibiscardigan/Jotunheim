@@ -8,7 +8,8 @@ client {
   meta {
     environment = "{{ nodes[0] }}"
     datacenter  = "{{ nomad_datacenter }}"
-    domains = "{{ host_domains | join(',') }}"
+    domain = "{{ meta_domain }}"
+    class = "{{ meta_class }}"
   }
 }
 

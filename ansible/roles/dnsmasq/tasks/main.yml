@@ -1,0 +1,8 @@
+---
+- name: Install
+  when:
+    - docker or nomad
+  become: true
+  block:
+    - name: Install
+      ansible.builtin.include_tasks: install.yml

@@ -1,0 +1,22 @@
+---
+- name: Pull image from source registry
+  community.docker.docker_image:
+    name: "{{ mirror_pair.0.source }}"
+    tag: "{{ mirror_pair.0.tag }}"
+    source: pull
+  become: true
+
+- name: Tag image for internal registry
+  ansible.builtin.command:
+    cmd: >-
+      docker tag {{ mirror_pair.0.source }}:{{ mirror_pair.0.tag }}
+      {{ mirror_pair.0.target }}:{{ mirror_pair.0.tag }}
+  become: true
+
+- name: Push image to internal registry
+  community.docker.docker_image:
+    name: "{{ mirror_pair.0.target }}"
+    tag: "{{ mirror_pair.0.tag }}"
+    source: local
+    push: true
+  become: true

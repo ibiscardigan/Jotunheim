@@ -12,7 +12,7 @@
 - name: Install
   when:
     - docker_valid.rc != 0
-    - orchestration.docker
+    - docker or nomad
   become: true
   block:
     - name: Install
@@ -21,8 +21,17 @@
 - name: Uninstall
   when:
     - docker_valid.rc == 0
-    - not orchestration.docker
+    - not docker or not nomad
   become: true
   block:
     - name: Uninstall
       ansible.builtin.include_tasks: uninstall.yml
+
+- name: Update
+  when:
+    - docker_valid.rc == 0
+    - docker or nomad
+  become: true
+  block:
+    - name: Update
+      ansible.builtin.include_tasks: update.yml

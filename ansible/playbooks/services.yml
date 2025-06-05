@@ -5,4 +5,6 @@
 
   roles:
     - role: firefly_iii
-      when: ansible_system != 'Darwin'
+      when: ansible_system != 'Darwin' and home.firefly_iii
+
+    - role: n8n

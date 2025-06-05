@@ -1,0 +1,40 @@
+- name: Stat Docker daemon config
+  become: true
+  ansible.builtin.stat:
+    path: /etc/docker/daemon.json
+  register: docker_daemon_config_stat
+
+- name: Load existing Docker daemon config (if exists)
+  become: true
+  ansible.builtin.slurp:
+    path: /etc/docker/daemon.json
+  register: docker_daemon_config_raw
+  when: docker_daemon_config_stat.stat.exists
+
+- name: Decode Docker daemon config
+  ansible.builtin.set_fact:
+    docker_daemon_config: "{{ docker_daemon_config_raw.content | b64decode | from_json }}"
+  when: docker_daemon_config_raw is defined and docker_daemon_config_raw.content is defined
+
+- name: Set default Docker daemon config if missing
+  ansible.builtin.set_fact:
+    docker_daemon_config: {}
+  when: docker_daemon_config is not defined
+
+- name: Render Docker daemon.json config
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart Docker
+
+- name: Configure Docker daemon
+  ansible.builtin.template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart Docker

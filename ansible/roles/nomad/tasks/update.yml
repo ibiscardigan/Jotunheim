@@ -1,3 +1,23 @@
+---
+- name: Ensure docker group exists
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add nomad user to docker group
+  ansible.builtin.user:
+    name: nomad
+    groups: docker
+    append: yes
+
+- name: Ensure Nomad jobs directory exists
+  ansible.builtin.file:
+    path: /opt/nomad/jobs
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
 - name: Install systemd service file for Nomad
   ansible.builtin.template:
     src: "nomad.service.j2"
@@ -26,45 +46,34 @@
 - name: Gather Nomad server peers from inventory
   ansible.builtin.set_fact:
     nomad_server_peers: >-
-      {% set peers = [] -%}
-      {% for host in nodes
-            | map('extract', groups)
-            | flatten
-            | unique -%}
-        {% if hostvars[host].orchestration.nomad is defined
-              and hostvars[host].orchestration.nomad == 'server' -%}
-          {% set _ = peers.append(
-               hostvars[host].ansible_host
-               ~ ':' ~ (nomad_serf_port)
-             ) -%}
-        {% endif -%}
-      {% endfor -%}
+      {%- set peers = [] -%}
+      {%- for host in nodes
+          | map('extract', groups)
+          | flatten
+          | unique -%}
+        {%- if hostvars[host].get('nomad_server', False) -%}
+          {%- set _ = peers.append(hostvars[host].ansible_host ~ ':' ~ nomad_serf_port) -%}
+        {%- endif -%}
+      {%- endfor -%}
       {{ peers }}
 
-- name: Gather Nomad server peers from inventory for clients
+- name: Gather Nomad server peers from inventory
   ansible.builtin.set_fact:
     nomad_client_servers: >-
-      {% set peers = [] -%}
-      {% for host in nodes
-            | map('extract', groups)
-            | flatten
-            | unique -%}
-        {% if hostvars[host].orchestration.nomad is defined
-              and hostvars[host].orchestration.nomad == 'server' -%}
-          {% set _ = peers.append(
-               hostvars[host].ansible_host
-               ~ ':' ~ (nomad_rpc_port)
-             ) -%}
-        {% endif -%}
-      {% endfor -%}
+      {%- set peers = [] -%}
+      {%- for host in nodes
+          | map('extract', groups)
+          | flatten
+          | unique -%}
+        {%- if hostvars[host].get('nomad_server', False) -%}
+          {%- set _ = peers.append(hostvars[host].ansible_host ~ ':' ~ nomad_rpc_port) -%}
+        {%- endif -%}
+      {%- endfor -%}
       {{ peers }}
 
 - name: Debug Nomad server peers
   ansible.builtin.debug:
     var: nomad_server_peers
-
-- name: Include meta gatherers
-  ansible.builtin.include_tasks: meta.yml
 
 - name: Render Nomad server config
   ansible.builtin.template:
@@ -73,7 +82,7 @@
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
     mode: '0644'
-  when: orchestration.nomad == 'server'
+  when: nomad_server | default(false)
   become: true
   notify:
     - Restart Nomad
@@ -86,8 +95,17 @@
     owner: "{{ nomad_user }}"
     group: "{{ nomad_group }}"
     mode: '0644'
-  when: orchestration.nomad != 'false' and orchestration.nomad != 'server'
+  when: not nomad_server | default(true)
   become: true
+  notify:
+    - Restart Nomad
+    - Validate Nomad
+
+- name: Ensure nomad user can talk to Docker
+  ansible.builtin.user:
+    name: nomad
+    groups: docker
+    append: true
   notify:
     - Restart Nomad
     - Validate Nomad

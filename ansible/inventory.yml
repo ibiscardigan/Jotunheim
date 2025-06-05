@@ -18,27 +18,61 @@ devmacmbpm3p001_dev_vms:
     devubumlt0vm001:
       memory: 1
       storage: 8
-      image: focal
+      image: noble
     devubumlt0vm002:
-      cores: 2
-      memory: 2
+      memory: 1
       storage: 8
-      image: focal
+      image: noble
     devubumlt0vm003:
       memory: 1
       storage: 8
-      image: focal
+      image: noble
     devubumlt0vm004:
+      memory: 4
+      cores: 2
+      storage: 40
+      image: noble
+    devubumlt0vm005:
+      memory: 4
+      cores: 2
+      storage: 40
+      image: noble
+    devubumlt0vm006:
+      memory: 4
+      cores: 2
+      storage: 40
+      image: noble
+    devubumlt0vm007:
       memory: 1
       storage: 8
-      image: focal
+      image: noble
+
+multipass_vms:
+  children:
+    devmacmbpm3p001_dev_vms:
+
+class_orchestration:
+  hosts:
+    devubumlt0vm001:
+    devubumlt0vm002:
+    devubumlt0vm003:
+
+class_data:
+  hosts:
+    devubumlt0vm004:
     devubumlt0vm005:
-      cores: 4
-      memory: 2
-      storage: 8
-      image: focal
     devubumlt0vm006:
-      cores: 1
-      memory: 2
-      storage: 8
-      image: focal
+    devubumlt0vm007:
+
+domain_ai:
+  hosts:
+    devubumlt0vm004:
+    devubumlt0vm005:
+    devubumlt0vm006:
+
+domain_infra:
+  hosts:
+    devubumlt0vm001:
+    devubumlt0vm002:
+    devubumlt0vm003:
+    devubumlt0vm007:

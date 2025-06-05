@@ -4,3 +4,7 @@ postgresql_users:
     firefly_iii:
       name: firefly_iii
       password: "{{ postgresql_passwords.firefly_iii }}"
+  ai:
+    n8n:
+      name: n8n
+      password: "{{ postgresql_passwords.n8n }}"

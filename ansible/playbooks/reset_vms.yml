@@ -89,36 +89,26 @@
             state: absent
           loop: "{{ groups[vm_list] }}"
 
-        - name: Load base host attributes
+        - name: Set host_vars_path dynamically
           ansible.builtin.set_fact:
-            base_attrs: >-
-              {{ lookup('file', playbook_dir + '/../group_vars/all/base_host_attributes.yml')
-                | from_yaml }}
-          run_once: true
-          vars:
-            ansible_cacheable: true
+            host_vars_path: "{{ playbook_dir }}/../host_vars"
 
-        - name: Set ansible_python_interpreter and pip_executable per host
-          vars:
-            host_var_prep_host_vars_path: "{{ ansible_env.HOME }}/Jotunheim/ansible/host_vars"
-            hostfile: "{{ host_var_prep_host_vars_path }}/{{ item }}.yml"
-            existing: >-
-              {{ lookup('file', hostfile) | default('', true) | from_yaml | default({}, true) }}
-            python_interp: "{{ base_attrs.ansible_python_interpreter }}"
-            merged: >-
-              {{ existing
-                | combine({
-                    'ansible_python_interpreter': python_interp,
-                    'pip_executable': '/usr/bin/pip3'
-                  }, recursive=True) }}
-            merged_yaml: "{{ merged | to_nice_yaml(indent=0) | regex_replace('^---\\n', '') }}"
-          ansible.builtin.copy:
-            dest: "{{ hostfile }}"
-            content: "{{ merged_yaml }}"
-            mode: '0644'
+        - name: Remove generated host_vars for all VMs
+          ansible.builtin.file:
+            path: "{{ host_vars_path }}/{{ item }}.yml"
+            state: absent
           loop: "{{ groups[vm_list] }}"
-          loop_control:
-            loop_var: item
-          notify:
-            - Refresh inventory
-          changed_when: false
+          delegate_to: localhost
+
+        - name: Clear known_hosts file on localhost
+          ansible.builtin.file:
+            path: "{{ lookup('env', 'HOME') }}/.ssh/known_hosts"
+            state: absent
+          delegate_to: localhost
+          run_once: true
+
+        - name: Clear all content from known_hosts
+          ansible.builtin.copy:
+            dest: "{{ ansible_env.HOME }}/.ssh/known_hosts"
+            content: ""
+            mode: '0600'

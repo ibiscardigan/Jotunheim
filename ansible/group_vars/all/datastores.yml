@@ -4,6 +4,10 @@ postgresql_databases:
     firefly_iii:
       name: firefly_iii
       owner: firefly_iii
+  ai:
+    n8n:
+      name: n8n
+      owner: n8n
 
 nfs_paths:
   home:

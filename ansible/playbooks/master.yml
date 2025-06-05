@@ -16,6 +16,3 @@
 
 - name: Run datastores.yml
   import_playbook: datastores.yml
-
-- name: Run services.yml
-  import_playbook: services.yml
