@@ -30,21 +30,7 @@ devmacmbpm3p001_dev_vms:
     devubumlt0vm004:
       memory: 4
       cores: 2
-      storage: 40
-      image: noble
-    devubumlt0vm005:
-      memory: 4
-      cores: 2
-      storage: 40
-      image: noble
-    devubumlt0vm006:
-      memory: 4
-      cores: 2
-      storage: 40
-      image: noble
-    devubumlt0vm007:
-      memory: 1
-      storage: 8
+      storage: 24
       image: noble
 
 multipass_vms:
@@ -57,22 +43,16 @@ class_orchestration:
     devubumlt0vm002:
     devubumlt0vm003:
 
-class_data:
+class_compute:
   hosts:
     devubumlt0vm004:
-    devubumlt0vm005:
-    devubumlt0vm006:
-    devubumlt0vm007:
 
 domain_ai:
   hosts:
     devubumlt0vm004:
-    devubumlt0vm005:
-    devubumlt0vm006:
 
 domain_infra:
   hosts:
     devubumlt0vm001:
     devubumlt0vm002:
     devubumlt0vm003:
-    devubumlt0vm007:

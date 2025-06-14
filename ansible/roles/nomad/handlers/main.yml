@@ -3,6 +3,7 @@
   ansible.builtin.systemd:
     daemon_reload: true
   listen: Reload systemd
+  become: true
 
 - name: Restart Nomad
   ansible.builtin.systemd:
@@ -21,3 +22,14 @@
   ansible.builtin.include_tasks: validate_client.yml
   when: not nomad_server | default(true)
   listen: Validate Nomad
+
+- name: Wait for Nomad API to be available
+  ansible.builtin.uri:
+    url: http://localhost:4646/v1/status/leader
+    method: GET
+    status_code: 200
+  register: nomad_ready
+  retries: 10
+  delay: 2
+  until: nomad_ready.status == 200
+  listen: Restart Nomad

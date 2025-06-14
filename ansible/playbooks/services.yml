@@ -1,10 +1,13 @@
 ---
-- name: Provision the service components on hosts
+- name: Provision the services on hosts
   hosts: "{{ target_hosts | default(nodes | default(['dev'])) }}"
-  gather_facts: false
+  gather_facts: yes
 
-  roles:
-    - role: firefly_iii
-      when: ansible_system != 'Darwin' and home.firefly_iii
-
-    - role: n8n
+  tasks:
+    - name: Include n8n role conditionally
+      ansible.builtin.include_role:
+        name: n8n
+      when:
+        - ansible_system != 'Darwin'
+        - meta_class == 'compute'
+        - meta_domain == 'ai'

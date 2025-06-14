@@ -43,23 +43,23 @@
   ansible.builtin.set_fact:
     all_node_hosts: "{{ groups[nodes[0]] | unique }}"
 
-- name: Gather Nomad server peers from inventory
+- name: Set node host volumes from domain/class
   ansible.builtin.set_fact:
-    nomad_server_peers: >-
-      {%- set peers = [] -%}
-      {%- for host in nodes
-          | map('extract', groups)
-          | flatten
-          | unique -%}
-        {%- if hostvars[host].get('nomad_server', False) -%}
-          {%- set _ = peers.append(hostvars[host].ansible_host ~ ':' ~ nomad_serf_port) -%}
-        {%- endif -%}
-      {%- endfor -%}
-      {{ peers }}
+    node_host_volumes: "{{ lookup('vars', 'nomad_mounts')[meta_class] | default([]) }}"
+
+- name: Ensure Nomad host_volume paths exist for this meta class
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: '0755'
+  loop: "{{ nomad_mounts[meta_class] | default([]) }}"
+  when: meta_class is defined
 
 - name: Gather Nomad server peers from inventory
   ansible.builtin.set_fact:
-    nomad_client_servers: >-
+    nomad_servers_rpc: >-
       {%- set peers = [] -%}
       {%- for host in nodes
           | map('extract', groups)
@@ -71,9 +71,19 @@
       {%- endfor -%}
       {{ peers }}
 
-- name: Debug Nomad server peers
-  ansible.builtin.debug:
-    var: nomad_server_peers
+- name: Gather Nomad server peers from inventory
+  ansible.builtin.set_fact:
+    nomad_servers_serf: >-
+      {%- set peers = [] -%}
+      {%- for host in nodes
+          | map('extract', groups)
+          | flatten
+          | unique -%}
+        {%- if hostvars[host].get('nomad_server', False) -%}
+          {%- set _ = peers.append(hostvars[host].ansible_host ~ ':' ~ nomad_serf_port) -%}
+        {%- endif -%}
+      {%- endfor -%}
+      {{ peers }}
 
 - name: Render Nomad server config
   ansible.builtin.template:

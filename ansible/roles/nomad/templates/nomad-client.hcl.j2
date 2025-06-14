@@ -1,43 +1,29 @@
 # Global
-datacenter = "{{ nomad_datacenter }}"
+datacenter = "{{ meta_datacenter }}"
 data_dir   = "{{ nomad_data_dir }}"
 bind_addr  = "{{ nomad_bind_addr }}"
 
 # Client mode
 client {
   enabled = true
+  servers = {{ nomad_servers_rpc | to_json }}
 
-  # How to find your servers:
-  servers = {{ nomad_client_servers | to_json }}
-
-  # Optional network selection
-  # network_interface = "{{ nomad_client_interface | default(ansible_default_ipv4.interface) }}"
-
-  # Add metadata for job constraints
   meta {
     environment = "{{ nodes[0] }}"
     datacenter  = "{{ nomad_datacenter }}"
-    domain      = "{{ meta_domain | default("") }}"
-    class       = "{{ meta_class | default("") }}"
+    domain      = "{{ meta_domain | default('') }}"
+    class       = "{{ meta_class | default('') }}"
   }
 
   options {
-    # Allow bind-mount volumes from the host into Docker tasks
     "docker.volumes.enabled" = true
-
-    # Optional: enable privileged containers
     # "docker.privileged.enabled" = true
-
-    {% if nomad_mounts is defined and nomad_mounts | length > 0 %}
-    # Optional note: ensure host paths exist and are accessible to Docker
-    {% for mount in nomad_mounts %}
-    # Requires: {{ mount.source }} → mounted at → {{ mount.target }} inside container
-    {% endfor %}
-    {% endif %}
   }
-}
 
-# Optional telemetry
-# telemetry {
-#   disable_hostname = false
-# }
+  {% for vol in node_host_volumes %}
+  host_volume "{{ vol.name }}" {
+    path      = "{{ vol.path }}"
+    read_only = {{ vol.read_only | bool | lower }}
+  }
+  {% endfor %}
+}

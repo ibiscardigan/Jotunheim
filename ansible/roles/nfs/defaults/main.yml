@@ -1,5 +1,0 @@
----
-nfs_server: "{{ ansible_host }}"
-nfs_export_subnet: "{{ env_cidr[nodes[0]] | default('192.168.1.0/24') }}"
-nfs_options: "defaults,_netdev"
-nfs_allowed_hosts: "*"

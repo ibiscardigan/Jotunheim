@@ -1,4 +1,13 @@
 ---
+- name: Check if /etc/resolv.conf is a symlink
+  ansible.builtin.stat:
+    path: /etc/resolv.conf
+  register: resolv_conf_stat
+
+- name: Set fact if /etc/resolv.conf is a symlink
+  ansible.builtin.set_fact:
+    resolv_conf_islink: "{{ resolv_conf_stat.stat.islnk | default(false) }}"
+
 - name: Install dnsmasq
   ansible.builtin.apt:
     name: dnsmasq
@@ -27,22 +36,35 @@
     state: started
   become: true
 
-- name: Disable systemd-resolved
+- name: Disable systemd-resolved if running/enabled
   ansible.builtin.systemd:
     name: systemd-resolved
     state: stopped
     enabled: false
+  become: true
+  when: >
+    ansible_facts.services['systemd-resolved.service'] is defined and
+    (
+      ansible_facts.services['systemd-resolved.service'].state != 'stopped' or
+      ansible_facts.services['systemd-resolved.service'].status != 'disabled'
+    )
 
-- name: Remove systemd-resolved symlink
+- name: Remove systemd-resolved symlink only if it's a symlink
   ansible.builtin.file:
     path: /etc/resolv.conf
     state: absent
+  become: true
+  when: ansible_facts['resolv_conf_islink'] | default(false)
 
-- name: Set resolv.conf to use dnsmasq
+- name: Set resolv.conf to use dnsmasq if not already set
   ansible.builtin.copy:
     dest: /etc/resolv.conf
     content: "nameserver 127.0.0.1\n"
     owner: root
     group: root
     mode: "0644"
+  become: true
   notify: Restart dnsmasq
+  register: resolv_conf_result
+  check_mode: no
+  when: resolv_conf_result is not defined or resolv_conf_result is changed

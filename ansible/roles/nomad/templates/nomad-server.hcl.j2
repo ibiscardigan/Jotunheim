@@ -31,7 +31,7 @@ server {
   bootstrap_expect = {{ nomad_bootstrap_expect }}
 
   # retry_join as a JSON array
-  retry_join = {{ nomad_server_peers | to_json }}
+  retry_join = {{ nomad_servers_serf| to_json }}
 }
 # extra comment to test deploy
 # Optional telemetry

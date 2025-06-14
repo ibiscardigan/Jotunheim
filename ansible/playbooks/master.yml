@@ -2,9 +2,6 @@
   hosts: "{{ nodes | default(['dev']) }}"
   gather_facts: false
 
-- name: Run prepare_ansible.yml
-  import_playbook: prepare_ansible.yml
-
 - name: Run hypervisors.yml
   import_playbook: hypervisors.yml
 
@@ -14,5 +11,5 @@
 - name: Run orchestration.yml
   import_playbook: orchestration.yml
 
-- name: Run datastores.yml
-  import_playbook: datastores.yml
+- name: Run services.yml
+  import_playbook: services.yml

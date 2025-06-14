@@ -1,0 +1,6 @@
+---
+nomad_mounts:
+  compute:
+    - name: n8n_data
+      path: /opt/n8n/.n8n
+      read_only: false

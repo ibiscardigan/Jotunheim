@@ -1,14 +1,23 @@
 ---
-- name: Install & Update n8n via Nomad
-  when: ai.n8n | default(false) | bool
+- name: Ensure n8n data directory exists
+  ansible.builtin.file:
+    path: "{{ n8n_data_path }}/.n8n"
+    state: directory
+    owner: "1000"
+    group: "1000"
+    mode: "0755"
   become: true
-  block:
-    - name: Include n8n nomad install tasks
-      ansible.builtin.include_tasks: install.yml
 
-- name: Uninstall n8n via Nomad
-  when: not (ai.n8n | default(false) | bool)
+- name: Register n8n Nomad job
+  ansible.builtin.template:
+    src: n8n.nomad.j2
+    dest: /opt/nomad/jobs/{{ n8n_nomad_job_name }}.nomad
+    mode: "0644"
   become: true
-  block:
-    - name: Include n8n nomad uninstall tasks
-      ansible.builtin.include_tasks: uninstall.yml
+
+- name: Run n8n Nomad job
+  ansible.builtin.command:
+    cmd: "nomad job run /opt/nomad/jobs/{{ n8n_nomad_job_name }}.nomad"
+  changed_when: true
+  run_once: true
+  become: true

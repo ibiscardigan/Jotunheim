@@ -39,6 +39,15 @@
     mode: "0755"
   become: true
 
+- name: Create Nomad job directory
+  ansible.builtin.file:
+    path: "{{ nomad_job_dir }}"
+    state: directory
+    owner: "{{ nomad_user }}"
+    group: "{{ nomad_group }}"
+    mode: "0755"
+  become: true
+
 - name: Set Nomad download parameters
   ansible.builtin.set_fact:
     nomad_os: "{{ ansible_system | lower }}"

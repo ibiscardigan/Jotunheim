@@ -1,2 +1,3 @@
 ---
 nomad_job_dir: "/etc/nomad/jobs"
+nomad_user: nomad

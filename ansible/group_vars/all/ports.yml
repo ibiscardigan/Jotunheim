@@ -9,6 +9,7 @@ docker_registry_port: 5050
 unbound_port: 5335
 postgres_port: 5432
 n8n_http_port: 5678
+patroni_http_port: 8008
 firefly_iii_service_port: 8080
 firefly_iii_host_port: 8080
 home_assistant_port: 8123

@@ -1,7 +1,7 @@
 ---
 postgres_clusters:
-  - name: ai-n8n
+  - name: pg-ai-n8n
     domain: "{{ meta_domain }}"
     storage:
-      mount_path: "{{ postgres_data_root }}/ai"
+      mount_path: "/mnt/storage/pgdata/ai"
     patroni_mount_path: "/etc/patroni/patroni-ai-n8n.yml"
